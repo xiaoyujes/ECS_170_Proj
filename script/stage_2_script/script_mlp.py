@@ -1,5 +1,5 @@
 from local_code.stage_2_code.Dataset_Loader import Dataset_Loader
-from local_code.stage_2_code.Method_MLP import Method_MLP
+from local_code.stage_2_code.Method_MLP_fullbatch_main import Method_MLP
 from local_code.stage_2_code.Result_Saver import Result_Saver
 from local_code.stage_2_code.Evaluate_Accuracy import Evaluate_Accuracy
 from sklearn.metrics import f1_score, recall_score, precision_score
