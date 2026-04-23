@@ -15,7 +15,7 @@ import numpy as np
 class Method_MLP(method, nn.Module):
     data = None
     # it defines the max rounds to train the model
-    max_epoch = 500
+    max_epoch = 250
     # it defines the learning rate for gradient descent based optimizer for model learning
     learning_rate = 5e-4
 
@@ -26,14 +26,18 @@ class Method_MLP(method, nn.Module):
         method.__init__(self, mName, mDescription)
         nn.Module.__init__(self)
         # check here for nn.Linear doc: https://pytorch.org/docs/stable/generated/torch.nn.Linear.html
-        self.fc_layer_1 = nn.Linear(784, 128)
+        self.fc_layer_1 = nn.Linear(784, 512)
         # check here for nn.ReLU doc: https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html
         self.activation_func_1 = nn.ReLU()
-        self.fc_layer_2 = nn.Linear(128, 64)
+        self.fc_layer_2 = nn.Linear(512, 256)
         # check here for nn.Softmax doc: https://pytorch.org/docs/stable/generated/torch.nn.Softmax.html
         self.activation_func_2 = nn.ReLU()
-        self.fc_layer_3 = nn.Linear(64, 10)
-        self.activation_func_3 = nn.Softmax(dim=1)
+        self.fc_layer_3 = nn.Linear(256, 128)
+        self.activation_func_3 = nn.ReLU()
+        self.fc_layer_4 = nn.Linear(128, 10)
+        self.activation_func_4 = nn.Softmax(dim=1)
+
+        self.dropout = nn.Dropout(p=0.15)
 
         self.historical_loss = []
         self.historical_accuracy = []
@@ -49,8 +53,12 @@ class Method_MLP(method, nn.Module):
         # self.fc_layer_2(h) will be a nx2 tensor
         # n (denotes the input instance number): 0th dimension; 2 (denotes the class number): 1st dimension
         # we do softmax along dim=1 to get the normalized classification probability distributions for each instance
+        h = self.dropout(h)
         h = self.activation_func_2(self.fc_layer_2(h))
-        y_pred = self.activation_func_3(self.fc_layer_3(h))
+        h = self.dropout(h)
+        h = self.activation_func_3(self.fc_layer_3(h))
+        h = self.dropout(h)
+        y_pred = self.activation_func_4(self.fc_layer_4(h))
         return y_pred
 
     # backward error propagation will be implemented by pytorch automatically
@@ -63,6 +71,10 @@ class Method_MLP(method, nn.Module):
         loss_function = nn.CrossEntropyLoss()
         # for training accuracy investigation purpose
         accuracy_evaluator = Evaluate_Accuracy('training evaluator', '')
+
+        best_loss = float('inf')
+        patience = 20
+        patience_counter = 0
 
         # it will be an iterative gradient updating process
         # we don't do mini-batch, we use the whole input as one batch
@@ -86,6 +98,15 @@ class Method_MLP(method, nn.Module):
 
             #storing loss for the loss convergence curve
             self.historical_loss.append(train_loss.item())
+
+            if train_loss.item() < best_loss:
+                best_loss = train_loss.item()
+                patience_counter = 0
+            else:
+                patience_counter += 1
+                if patience_counter >= patience:
+                    print(f'Early stopping at epoch {epoch}')
+                    break
 
             if epoch%10 == 0: #originally epoch%100 but did epoch%1 just to get an idea of what is going on (change back when have stable model version)
                 accuracy_evaluator.data = {'true_y': y_true, 'pred_y': y_pred.max(1)[1]}

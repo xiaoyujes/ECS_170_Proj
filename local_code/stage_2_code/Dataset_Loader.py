@@ -6,6 +6,7 @@ Concrete IO class for a specific dataset
 # License: TBD
 
 from local_code.base_class.dataset import dataset
+import numpy as np
 
 
 class Dataset_Loader(dataset):
