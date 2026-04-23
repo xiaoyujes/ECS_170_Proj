@@ -64,13 +64,12 @@ for avg in ['macro', 'weighted', 'micro']:
 
 # ---------------- LOSS PLOT ----------------
 plt.figure()
-plt.plot(model.historical_loss)   # IMPORTANT: match your MLP file variable
+plt.plot(model.historical_loss)  
 plt.title("Loss Convergence Curve")
 plt.xlabel("Epoch")
 plt.ylabel("Loss")
 plt.grid(True)
 
-# optional save (same as your partner style)
 plt.savefig('../../result/stage_2_result/loss_convergence.png')
 
 plt.show()
