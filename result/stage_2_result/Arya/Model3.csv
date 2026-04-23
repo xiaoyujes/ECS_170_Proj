@@ -1,0 +1,43 @@
+Epoch 0 | Loss 2.3043 | Accuracy 0.0916
+Epoch 10 | Loss 2.1460 | Accuracy 0.6259
+Epoch 20 | Loss 1.8541 | Accuracy 0.6725
+Epoch 30 | Loss 1.4729 | Accuracy 0.7567
+Epoch 40 | Loss 1.0881 | Accuracy 0.8074
+Epoch 50 | Loss 0.7990 | Accuracy 0.8325
+Epoch 60 | Loss 0.6198 | Accuracy 0.8526
+Epoch 70 | Loss 0.5117 | Accuracy 0.8707
+Epoch 80 | Loss 0.4430 | Accuracy 0.8846
+Epoch 90 | Loss 0.3967 | Accuracy 0.8935
+Epoch 100 | Loss 0.3640 | Accuracy 0.9008
+Epoch 110 | Loss 0.3399 | Accuracy 0.9065
+Epoch 120 | Loss 0.3212 | Accuracy 0.9112
+Epoch 130 | Loss 0.3060 | Accuracy 0.9151
+Epoch 140 | Loss 0.2931 | Accuracy 0.9186
+Epoch 150 | Loss 0.2818 | Accuracy 0.9216
+Epoch 160 | Loss 0.2717 | Accuracy 0.9247
+Epoch 170 | Loss 0.2625 | Accuracy 0.9269
+Epoch 180 | Loss 0.2541 | Accuracy 0.9290
+Epoch 190 | Loss 0.2463 | Accuracy 0.9313
+Epoch 200 | Loss 0.2389 | Accuracy 0.9336
+Epoch 210 | Loss 0.2319 | Accuracy 0.9354
+Epoch 220 | Loss 0.2251 | Accuracy 0.9372
+Epoch 230 | Loss 0.2187 | Accuracy 0.9391
+Epoch 240 | Loss 0.2124 | Accuracy 0.9407
+
+************ Overall Performance ************
+Accuracy: 0.9414
+
+MACRO
+F1: 0.9407426275614256
+Precision: 0.9409236627949508
+Recall: 0.9407590123568614
+
+WEIGHTED
+F1: 0.9413011633319677
+Precision: 0.9413936766539435
+Recall: 0.9414
+
+MICRO
+F1: 0.9414
+Precision: 0.9414
+Recall: 0.9414
