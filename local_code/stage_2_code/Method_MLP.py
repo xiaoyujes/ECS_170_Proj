@@ -1,9 +1,4 @@
-'''
-Concrete MethodModule class for a specific learning MethodModule
-'''
-
-# Copyright (c) 2017-Current Jiawei Zhang <jiawei@ifmlab.org>
-# License: TBD
+# Arya Chaudhari Made this Model
 
 from local_code.base_class.method import method
 from local_code.stage_2_code.Evaluate_Accuracy import Evaluate_Accuracy
@@ -14,17 +9,20 @@ import numpy as np
 
 class Method_MLP(method, nn.Module):
     data = None
+<<<<<<<< HEAD:local_code/stage_2_code/Method_MLP_fullbatch_main.py
     # it defines the max rounds to train the model
     max_epoch = 250
     # it defines the learning rate for gradient descent based optimizer for model learning
     learning_rate = 5e-4
+========
+    max_epoch = 300   # good balance for your laptop
+    learning_rate = 6e-4
+>>>>>>>> a7220c7d1e9244dd4d1c6a773fb1c83473d2030f:local_code/stage_2_code/Method_MLP.py
 
-    # it defines the MLP model architecture, e.g.,
-    # how many layers, size of variables in each layer, activation function, etc.
-    # the size of the input/output portal of the model architecture should be consistent with our data input and desired output
     def __init__(self, mName, mDescription):
         method.__init__(self, mName, mDescription)
         nn.Module.__init__(self)
+<<<<<<<< HEAD:local_code/stage_2_code/Method_MLP_fullbatch_main.py
         # check here for nn.Linear doc: https://pytorch.org/docs/stable/generated/torch.nn.Linear.html
         self.fc_layer_1 = nn.Linear(784, 512)
         # check here for nn.ReLU doc: https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html
@@ -38,14 +36,23 @@ class Method_MLP(method, nn.Module):
         self.activation_func_4 = nn.Softmax(dim=1)
 
         self.dropout = nn.Dropout(p=0.15)
+========
+
+        # --- Architecture (same as your working version) ---
+        self.fc1 = nn.Linear(784, 128)
+        self.relu1 = nn.ReLU()
+
+        self.fc2 = nn.Linear(128, 64)
+        self.relu2 = nn.ReLU()
+
+        self.fc3 = nn.Linear(64, 10)
+
+>>>>>>>> a7220c7d1e9244dd4d1c6a773fb1c83473d2030f:local_code/stage_2_code/Method_MLP.py
 
         self.historical_loss = []
-        self.historical_accuracy = []
-
-    # it defines the forward propagation function for input x
-    # this function will calculate the output layer by layer
 
     def forward(self, x):
+<<<<<<<< HEAD:local_code/stage_2_code/Method_MLP_fullbatch_main.py
         '''Forward propagation'''
         # hidden layer embeddings
         h = self.activation_func_1(self.fc_layer_1(x))
@@ -63,15 +70,18 @@ class Method_MLP(method, nn.Module):
 
     # backward error propagation will be implemented by pytorch automatically
     # so we don't need to define the error backpropagation function here
+========
+        x = self.relu1(self.fc1(x))
+        x = self.relu2(self.fc2(x))
+        x = self.fc3(x)   # logits (correct for CrossEntropyLoss)
+        return x
+>>>>>>>> a7220c7d1e9244dd4d1c6a773fb1c83473d2030f:local_code/stage_2_code/Method_MLP.py
 
     def train(self, X, y):
-        # check here for the torch.optim doc: https://pytorch.org/docs/stable/optim.html
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        # check here for the nn.CrossEntropyLoss doc: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html
-        loss_function = nn.CrossEntropyLoss()
-        # for training accuracy investigation purpose
-        accuracy_evaluator = Evaluate_Accuracy('training evaluator', '')
+        loss_fn = nn.CrossEntropyLoss()
 
+<<<<<<<< HEAD:local_code/stage_2_code/Method_MLP_fullbatch_main.py
         best_loss = float('inf')
         patience = 20
         patience_counter = 0
@@ -86,19 +96,23 @@ class Method_MLP(method, nn.Module):
             y_true = torch.LongTensor(np.array(y))
             # calculate the training loss
             train_loss = loss_function(y_pred, y_true)
+========
+        # FULL BATCH (required by assignment)
+        X = torch.FloatTensor(np.array(X))
+        y = torch.LongTensor(np.array(y))
 
-            # check here for the gradient init doc: https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html
+        for epoch in range(self.max_epoch):
+
+            preds = self.forward(X)
+            loss = loss_fn(preds, y)
+>>>>>>>> a7220c7d1e9244dd4d1c6a773fb1c83473d2030f:local_code/stage_2_code/Method_MLP.py
+
             optimizer.zero_grad()
-            # check here for the loss.backward doc: https://pytorch.org/docs/stable/generated/torch.Tensor.backward.html
-            # do the error backpropagation to calculate the gradients
-            train_loss.backward()
-            # check here for the opti.step doc: https://pytorch.org/docs/stable/optim.html
-            # update the variables according to the optimizer and the gradients calculated by the above loss.backward function
+            loss.backward()
             optimizer.step()
 
-            #storing loss for the loss convergence curve
-            self.historical_loss.append(train_loss.item())
 
+<<<<<<<< HEAD:local_code/stage_2_code/Method_MLP_fullbatch_main.py
             if train_loss.item() < best_loss:
                 best_loss = train_loss.item()
                 patience_counter = 0
@@ -115,18 +129,32 @@ class Method_MLP(method, nn.Module):
                 self.historical_accuracy.append(train_accuracy)
                 print('Epoch:', epoch, 'Accuracy:', accuracy_evaluator.evaluate(), 'Loss:', train_loss.item())
     
+========
+            self.historical_loss.append(loss.item())
+
+            if epoch % 10 == 0:
+                acc = (preds.argmax(1) == y).float().mean().item()
+                print(f"Epoch {epoch} | Loss {loss.item():.4f} | Accuracy {acc:.4f}")
+
+>>>>>>>> a7220c7d1e9244dd4d1c6a773fb1c83473d2030f:local_code/stage_2_code/Method_MLP.py
     def test(self, X):
-        # do the testing, and result the result
-        y_pred = self.forward(torch.FloatTensor(np.array(X)))
-        # convert the probability distributions to the corresponding labels
-        # instances will get the labels corresponding to the largest probability
-        return y_pred.max(1)[1]
-    
+        X = torch.FloatTensor(np.array(X))
+
+        with torch.no_grad():
+            preds = self.forward(X)
+
+        # IMPORTANT: convert tensor → numpy (fixes sklearn + printing issues)
+        return preds.argmax(1).cpu().numpy()
+
     def run(self):
-        print('method running...')
-        print('--start training...')
+        print("method running...")
+        print("--start training...")
         self.train(self.data['train']['X'], self.data['train']['y'])
-        print('--start testing...')
+
+        print("--start testing...")
         pred_y = self.test(self.data['test']['X'])
-        return {'pred_y': pred_y, 'true_y': self.data['test']['y']}
-            
+
+        return {
+            'pred_y': pred_y,
+            'true_y': np.array(self.data['test']['y'])
+        }
