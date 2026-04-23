@@ -1,76 +1,87 @@
 from local_code.stage_2_code.Dataset_Loader import Dataset_Loader
-from local_code.stage_2_code.Method_MLP import Method_MLP
+from local_code.stage_2_code.Method_MLP_fullbatch_main import Method_MLP
 from local_code.stage_2_code.Result_Saver import Result_Saver
 from local_code.stage_2_code.Evaluate_Accuracy import Evaluate_Accuracy
-from sklearn.metrics import f1_score, precision_score, recall_score
+from sklearn.metrics import f1_score, recall_score, precision_score
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-np.random.seed(2)
-torch.manual_seed(2)
+#---- Multi-Layer Perceptron script ----
+if 1:
+    #---- parameter section -------------------------------
+    np.random.seed(2)
+    torch.manual_seed(2)
+    #------------------------------------------------------
 
-# ---------------- LOAD DATA ----------------
-data_obj = Dataset_Loader()
-data_obj.dataset_source_folder_path = '../../data/stage_2_data/'
-data_obj.dataset_source_train_file_name = 'train.csv'
-data_obj.dataset_source_test_file_name = 'test.csv'
+    # ---- objection initialization section ---------------
+    data_obj = Dataset_Loader('Stage 2', '')
+    data_obj.dataset_source_folder_path = '../../data/stage_2_data/'
+    data_obj.dataset_source_train_file_name = 'train.csv'
+    data_obj.dataset_source_test_file_name = 'test.csv'
 
-data = data_obj.load()
+    load_data = data_obj.load()
 
-# ---------------- MODEL ----------------
-model = Method_MLP('MLP', '')
-model.data = {
-    'train': {'X': data['X_train'], 'y': data['y_train']},
-    'test': {'X': data['X_test'], 'y': data['y_test']}
-}
+    method_obj = Method_MLP('multi-layer perceptron', '')
+    method_obj.data = {
+        'train':{
+            'X': load_data['X_train'],
+            'y': load_data['y_train'],
+        },
+        'test':{
+            'X': load_data['X_test'],
+            'y': load_data['y_test'],
+        }
+    }
 
-# ---------------- TRAIN/TEST ----------------
-results = model.run()
+    result_obj = Result_Saver('saver', '')
+    result_obj.result_destination_folder_path = '../../result/stage_2_result/'
+    result_obj.result_destination_file_name = 'prediction_result'
+    result_obj.fold_count = 1
 
-# ---------------- SAVE ----------------
-save_dir = '../../result/stage_2_result/'
+    results = method_obj.run()
 
-saver = Result_Saver()
-saver.result_destination_folder_path = save_dir
-saver.result_destination_file_name = 'predictions'
-saver.fold_count = 1
-saver.data = results['pred_y']
+    result_obj.data = results['pred_y']
+    result_obj.save()
 
-print("Saving to:", save_dir + 'predictions_1.csv')
+    evaluate_obj = Evaluate_Accuracy('accuracy', '')
+    # ------------------------------------------------------
 
-saver.save()
+    # ---- running section ---------------------------------
+    print('************ Start ************')
+    evaluate_obj.data = {
+        'true_y': results['true_y'],
+        'pred_y': results['pred_y']
+    }
+    metrics = evaluate_obj.evaluate()
 
-# ---------------- EVALUATION ----------------
-evaluator = Evaluate_Accuracy()
-evaluator.data = {
-    'true_y': results['true_y'],
-    'pred_y': results['pred_y']
-}
+    print('************ Overall Performance ************')
+    print(f'MLP Accuracy: {metrics}')
+    print('Other Metrics: ')
+    avg_methods = ['weighted', 'macro', 'micro']
 
-acc = evaluator.evaluate()
+    y_true = results['true_y']
+    y_pred = results['pred_y']
 
-print("\n************ Overall Performance ************")
-print("Accuracy:", acc)
+    for avg in avg_methods:
+        f1 = f1_score(y_true, y_pred, average=avg)
+        recall = recall_score(y_true, y_pred, average=avg)
+        precision = precision_score(y_true, y_pred, average=avg)
 
-y_true = results['true_y']
-y_pred = results['pred_y']
+        print(f'F1-Score - {avg}: {f1}')
+        print(f'Recall - {avg}: {recall}')
+        print(f'Precision - {avg}: {precision}')
+    # ------------------------------------------------------
 
-for avg in ['macro', 'weighted', 'micro']:
-    print(f"\n{avg.upper()}")
-    print("F1:", f1_score(y_true, y_pred, average=avg))
-    print("Precision:", precision_score(y_true, y_pred, average=avg))
-    print("Recall:", recall_score(y_true, y_pred, average=avg))
+    # --- Loss Convergence Plot -------
+    plt.figure()
+    plt.plot(method_obj.historical_loss)
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title('Loss Convergence Plot')
+    plt.grid(True)
+    plt.savefig('../../result/stage_2_result/loss_convergence.png')
+    plt.show()
+    
 
-# ---------------- LOSS PLOT ----------------
-plt.figure()
-plt.plot(model.historical_loss)   # IMPORTANT: match your MLP file variable
-plt.title("Loss Convergence Curve")
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.grid(True)
-
-# optional save (same as your partner style)
-plt.savefig('../../result/stage_2_result/loss_convergence.png')
-
-plt.show()
+    
