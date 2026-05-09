@@ -25,7 +25,7 @@ if 1:
     results = method_obj.run()
 
     result_obj = Result_Saver_ORL('saver', '')
-    result_obj.result_destination_folder_path = '../../../result/stage_3_result/'
+    result_obj.result_destination_folder_path = '../../../result/stage_3_result/Jeslyn/'
     result_obj.result_destination_file_name = 'ResNet_ORL_prediction_result'
     result_obj.fold_count = 1
     result_obj.data = results['pred_y']
@@ -66,5 +66,5 @@ if 1:
     plt.grid(True)
 
     plt.tight_layout()
-    plt.savefig('../../../result/stage_3_result/ResNet18_ORL_learning_curves.png')
+    plt.savefig('../../../result/stage_3_result/Jeslyn/ResNet18_ORL_learning_curves.png')
     plt.show()

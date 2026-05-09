@@ -25,7 +25,7 @@ if 1:
     results = method_obj.run()
 
     result_obj = Result_Saver_ORL('saver', '')
-    result_obj.result_destination_folder_path = '../../../result/stage_3_result/'
+    result_obj.result_destination_folder_path = '../../../result/stage_3_result/Jeslyn/'
     result_obj.result_destination_file_name = 'ORL_CNN_prediction_result'
     result_obj.fold_count = 1
     result_obj.data = results['pred_y']
@@ -65,5 +65,5 @@ if 1:
     plt.ylabel('Loss')
     plt.title('Loss Convergence Plot')
     plt.grid(True)
-    plt.savefig('../../../result/stage_3_result/loss_convergence.png')
+    plt.savefig('../../../result/stage_3_result/Jeslyn/loss_convergence.png')
     plt.show()
