@@ -1,0 +1,72 @@
+from local_code.stage_3_code.Dataset_Loader import Dataset_Loader
+from local_code.stage_3_code.Method_CNN_MNIST import Method_CNN_MNIST
+from local_code.stage_3_code.Evaluate_Accuracy import Evaluate_Accuracy
+
+import numpy as np
+import torch
+
+
+if __name__ == "__main__":
+    # -------- parameter section --------
+    np.random.seed(2)
+    torch.manual_seed(2)
+
+    version_name = 'cnn_mnist_Adam_deeper'
+    # -----------------------------------
+
+    # -------- object initialization ----
+    data_obj = Dataset_Loader('mnist_dataset', '')
+    data_obj.dataset_source_folder_path = '../../data/stage_3_data/'
+    data_obj.dataset_source_file_name = 'MNIST'
+
+    method_obj = Method_CNN_MNIST('cnn_mnist', '')
+    method_obj.max_epoch = 10
+    method_obj.learning_rate = 0.001
+    method_obj.batch_size = 64
+    method_obj.momentum = 0.9
+
+    evaluate_obj = Evaluate_Accuracy('accuracy', '')
+    # -----------------------------------
+
+    # -------- running section ----------
+    print('************ Start ************')
+    print('dataset: MNIST, method: CNN, setting: given train test split')
+
+    loaded_data = data_obj.load()
+    method_obj.data = loaded_data
+
+    learned_result = method_obj.run()
+
+    evaluate_obj.data = learned_result
+    metrics = evaluate_obj.evaluate()
+
+    print('************ Overall Performance ************')
+    print('Version:', version_name)
+    print('CNN Accuracy:', metrics['accuracy'])
+    print('F1-Score weighted:', metrics['f1_weighted'])
+    print('Recall weighted:', metrics['recall_weighted'])
+    print('Precision weighted:', metrics['precision_weighted'])
+    print('F1-Score macro:', metrics['f1_macro'])
+    print('Recall macro:', metrics['recall_macro'])
+    print('Precision macro:', metrics['precision_macro'])
+    print('F1-Score micro:', metrics['f1_micro'])
+    print('Recall micro:', metrics['recall_micro'])
+    print('Precision micro:', metrics['precision_micro'])
+    print('************ Finish ************')
+    # -----------------------------------
+
+    # -----------------------------------
+    # Result saver for plotting
+    from local_code.stage_2_code.Result_Saver import Result_Saver
+    result_obj = Result_Saver('saver', '')
+    result_obj.result_destination_folder_path = '../../result/stage_3_result/CNN_MNIST_'
+    result_obj.result_destination_file_name = f'prediction_result_{version_name}'
+    result_obj.data = learned_result
+    result_obj.save()
+
+    from local_code.stage_2_code.History_Saver import History_Saver
+    history_saver = History_Saver()
+    history_saver.history_destination_folder_path = '../../result/stage_3_result/'
+    history_saver.history_file_name = f'CNN_MNIST_history_{version_name}.csv'
+    history_saver.save(method_obj.history)
+    # -----------------------------------
