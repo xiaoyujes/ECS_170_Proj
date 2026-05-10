@@ -87,8 +87,8 @@ class Method_CNN_MNIST:
     def __init__(self,
                  num_classes=10,
                  lr=1e-3,
-                 batch_size=64,
-                 max_epoch=30,
+                 batch_size=128,
+                 max_epoch=10,
                  device=None):
 
         self.num_classes = num_classes
@@ -195,5 +195,3 @@ class Method_CNN_MNIST:
                 logits  = self.model(X_batch)
                 preds.append(logits.argmax(dim=1).cpu().numpy())
         return np.concatenate(preds)
-
-
