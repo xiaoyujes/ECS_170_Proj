@@ -2,7 +2,6 @@ from local_code.stage_3_code.Dataset_Loader_ORL import Dataset_Loader_ORL
 from local_code.stage_3_code.Method_CNN_ORL import Method_CNN_ORL
 from local_code.stage_3_code.Result_Saver import Result_Saver
 from local_code.stage_3_code.Evaluate_Accuracy import Evaluate_Accuracy
-from sklearn.metrics import f1_score, precision_score, recall_score
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -26,7 +25,7 @@ model = Method_CNN_ORL(
     num_classes = 40,
     lr          = 1e-3,
     batch_size  = 128,
-    max_epoch   = 10,
+    max_epoch   = 30,
 )
 
 model.train(X_train, y_train, X_test, y_test)
@@ -46,18 +45,8 @@ saver.save()
 # ---------------- EVALUATION ----------------
 evaluator = Evaluate_Accuracy()
 evaluator.data = {'true_y': y_test, 'pred_y': y_pred}
-
 result = evaluator.evaluate()
-
-print("\n************ Overall Performance ************")
 print(Evaluate_Accuracy.result_to_str(result))
-
-y_true = y_test
-for avg in ['macro', 'weighted', 'micro']:
-    print(f"\n{avg.upper()}")
-    print("F1:       ", f1_score(y_true, y_pred, average=avg))
-    print("Precision:", precision_score(y_true, y_pred, average=avg))
-    print("Recall:   ", recall_score(y_true, y_pred, average=avg))
 
 # ---------------- LEARNING CURVES ----------------
 epochs = range(1, model.max_epoch + 1)
