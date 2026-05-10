@@ -60,9 +60,9 @@ if 1:
     # --- Loss Convergence Plot -------
     plt.figure()
     plt.plot(method_obj.historical_loss)
-    plt.xlabel('Batch iteration (x10)')
+    plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('ResNet Loss Convergence Plot')
+    plt.title('ResNet18 Loss Convergence Plot - ORL')
     plt.grid(True)
 
     plt.tight_layout()

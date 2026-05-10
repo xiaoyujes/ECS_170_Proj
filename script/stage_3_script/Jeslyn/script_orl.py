@@ -63,7 +63,7 @@ if 1:
     plt.plot(method_obj.historical_loss)
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.title('Loss Convergence Plot')
+    plt.title('Loss Convergence Plot - ORL')
     plt.grid(True)
     plt.savefig('../../../result/stage_3_result/Jeslyn/loss_convergence.png')
     plt.show()
