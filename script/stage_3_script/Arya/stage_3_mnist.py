@@ -25,8 +25,8 @@ y_test  = data['test']['y']
 model = Method_CNN_MNIST(
     num_classes = 10,
     lr          = 1e-3,
-    batch_size  = 64,
-    max_epoch   = 30,
+    batch_size  = 128,
+    max_epoch   = 10,
 )
 
 model.train(X_train, y_train, X_test, y_test)
