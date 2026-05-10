@@ -1,6 +1,6 @@
 '''
 Concrete IO class for CIFAR-10 dataset.
-Loads from the instructor-provided pickle file named 'CIFAR' (no extension).
+
 
 Data format inside the pickle:
     {
