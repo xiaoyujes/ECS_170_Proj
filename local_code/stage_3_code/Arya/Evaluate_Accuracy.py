@@ -3,58 +3,44 @@ Concrete evaluate class for Accuracy metric.
 Shared across MNIST, ORL, and CIFAR experiments.
 '''
 
-# Copyright (c) 2015-Present, ECS 189G
-# All rights reserved.
-
 import numpy as np
+from sklearn.metrics import f1_score, precision_score, recall_score
 
 
 class Evaluate_Accuracy:
-    """
-    Computes accuracy and a simple per-class breakdown.
-
-    Usage
-    -----
-    evaluator = Evaluate_Accuracy()
-    evaluator.data = {'true_y': y_true, 'pred_y': y_pred}
-    result = evaluator.evaluate()
-    print(evaluator.result_to_str(result))
-    """
 
     def __init__(self):
-        self.data = None   # set externally: {'true_y': ..., 'pred_y': ...}
+        self.data = None  # {'true_y': ..., 'pred_y': ...}
 
     def evaluate(self):
         true_y = np.asarray(self.data['true_y'])
         pred_y = np.asarray(self.data['pred_y'])
 
-        if true_y.shape != pred_y.shape:
-            raise ValueError('Shape mismatch between true_y and pred_y.')
+        accuracy = float((true_y == pred_y).mean())
 
-        overall_acc = float((true_y == pred_y).mean())
-
-        classes = np.unique(true_y)
-        per_class = {}
-        for c in classes:
-            mask = (true_y == c)
-            per_class[int(c)] = float((pred_y[mask] == c).mean())
+        metrics = {}
+        for avg in ['weighted', 'macro', 'micro']:
+            metrics[avg] = {
+                'f1':        f1_score(true_y, pred_y, average=avg, zero_division=0),
+                'precision': precision_score(true_y, pred_y, average=avg, zero_division=0),
+                'recall':    recall_score(true_y, pred_y, average=avg, zero_division=0),
+            }
 
         return {
-            'accuracy':  overall_acc,
-            'per_class': per_class,
+            'accuracy': accuracy,
+            'metrics':  metrics,
             'n_samples': len(true_y),
         }
 
     @staticmethod
     def result_to_str(result):
         lines = [
-            '=' * 45,
-            f"  Overall Accuracy : {result['accuracy']*100:.2f}%",
-            f"  Total Samples    : {result['n_samples']}",
-            '-' * 45,
-            '  Per-Class Accuracy:',
+            '************ Overall Performance ************',
+            f"CNN Accuracy: {result['accuracy']:.4f}",
         ]
-        for cls, acc in sorted(result['per_class'].items()):
-            lines.append(f'    Class {cls:>3} : {acc*100:.2f}%')
-        lines.append('=' * 45)
+        for avg, vals in result['metrics'].items():
+            lines.append(f"F1-Score {avg}: {vals['f1']}")
+            lines.append(f"Recall {avg}: {vals['recall']}")
+            lines.append(f"Precision {avg}: {vals['precision']}")
+        lines.append('************ Finish ************')
         return '\n'.join(lines)
