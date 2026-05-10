@@ -1,6 +1,6 @@
 '''
 Concrete IO class for ORL face dataset.
-Loads from the instructor-provided pickle file named 'ORL' (no extension).
+
 
 Data format inside the pickle:
     {
