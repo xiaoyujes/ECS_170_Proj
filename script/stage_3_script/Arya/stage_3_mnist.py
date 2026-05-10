@@ -2,7 +2,6 @@ from local_code.stage_3_code.Dataset_Loader_MNIST import Dataset_Loader_MNIST
 from local_code.stage_3_code.Method_CNN_MNIST import Method_CNN_MNIST
 from local_code.stage_3_code.Result_Saver import Result_Saver
 from local_code.stage_3_code.Evaluate_Accuracy import Evaluate_Accuracy
-from sklearn.metrics import f1_score, precision_score, recall_score
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -46,24 +45,14 @@ saver.save()
 # ---------------- EVALUATION ----------------
 evaluator = Evaluate_Accuracy()
 evaluator.data = {'true_y': y_test, 'pred_y': y_pred}
-
 result = evaluator.evaluate()
-
-print("\n************ Overall Performance ************")
 print(Evaluate_Accuracy.result_to_str(result))
-
-y_true = y_test
-for avg in ['macro', 'weighted', 'micro']:
-    print(f"\n{avg.upper()}")
-    print("F1:       ", f1_score(y_true, y_pred, average=avg))
-    print("Precision:", precision_score(y_true, y_pred, average=avg))
-    print("Recall:   ", recall_score(y_true, y_pred, average=avg))
 
 # ---------------- LEARNING CURVES ----------------
 epochs = range(1, model.max_epoch + 1)
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
-fig.suptitle('MNIST CNN – Learning Curves', fontsize=14)
+fig.suptitle('MNIST CNN - Learning Curves', fontsize=14)
 
 ax1.plot(epochs, model.train_loss_history, 'b-o', markersize=3, label='Train Loss')
 ax1.plot(epochs, model.test_loss_history,  'r-s', markersize=3, label='Test Loss')
