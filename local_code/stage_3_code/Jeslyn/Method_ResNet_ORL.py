@@ -36,6 +36,8 @@ class Method_ResNet_ORL(method):
         self.optimizer = None
         self.historical_loss = []
         self.historical_accuracy = []
+        self.historical_test_loss = []
+        self.historical_test_accuracy = []
 
         self.resize_transform = transforms.Compose([
             transforms.Resize((224, 224)),
@@ -62,7 +64,26 @@ class Method_ResNet_ORL(method):
 
         return X_rgb
 
+    def evaluate_test_set(self, X_test, y_test):
+        X_tensor = torch.FloatTensor(np.array(X_test))
+        X_tensor = self.preprocess_images(X_tensor)
+        y_tensor = torch.LongTensor(np.array(y_test))
+
+        self.net.eval()
+        with torch.no_grad():
+            outputs = self.net(X_tensor)
+            test_loss = self.criterion(outputs, y_tensor).item()
+            _, predicted = torch.max(outputs, 1)
+            correct = (predicted == y_tensor).sum().item()
+            test_accuracy = 100 * correct / len(y_tensor)
+
+        self.net.train()
+        return test_loss, test_accuracy
+
     def train(self, X, y):
+        X_test = self.data['test']['X']
+        y_test = self.data['test']['y']
+
         X_tensor = torch.FloatTensor(np.array(X))
         X_tensor = self.preprocess_images(X_tensor)
         y_tensor = torch.LongTensor(np.array(y))
@@ -71,8 +92,8 @@ class Method_ResNet_ORL(method):
         trainloader = DataLoader(dataset, batch_size=8, shuffle=True, num_workers=0)
 
         self.optimizer = optim.Adam(self.net.parameters(),
-                                   lr=self.learning_rate,
-                                   weight_decay=1e-4)
+                                    lr=self.learning_rate,
+                                    weight_decay=1e-4)
 
         print(f'Training ResNet on ORL...')
         print(f'Input shape: {X_tensor.shape}')
@@ -112,9 +133,13 @@ class Method_ResNet_ORL(method):
             epoch_acc = 100 * correct / total
             self.historical_accuracy.append(epoch_acc)
 
-            if (epoch + 1) % 10 == 0:
-                print(
-                    f'*** Epoch [{epoch + 1}/{self.max_epoch}] Avg Loss: {avg_epoch_loss:.4f}, Accuracy: {epoch_acc:.2f}% ***')
+            test_loss, test_acc = self.evaluate_test_set(X_test, y_test)
+            self.historical_test_loss.append(test_loss)
+            self.historical_test_accuracy.append(test_acc)
+
+            print(f'*** Epoch [{epoch + 1}/{self.max_epoch}] '
+                  f'Train Loss: {avg_epoch_loss:.4f}, Train Acc: {epoch_acc:.2f}% | '
+                  f'Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.2f}% ***')
 
         print('Finished Training')
 

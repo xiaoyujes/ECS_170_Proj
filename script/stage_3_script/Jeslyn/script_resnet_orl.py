@@ -59,7 +59,8 @@ if 1:
 
     # --- Loss Convergence Plot -------
     plt.figure()
-    plt.plot(method_obj.historical_loss)
+    plt.plot(method_obj.historical_loss, 'b-', label='Training Loss', linewidth=2, marker='o')
+    plt.plot(method_obj.historical_test_loss, 'r-', label='Testing Loss', linewidth=2, marker='s')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('ResNet18 Loss Convergence Plot - ORL')
