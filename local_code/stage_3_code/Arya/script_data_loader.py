@@ -1,112 +1,44 @@
-from local_code.base_class.dataset import dataset
+'''
+Concrete IO class for MNIST dataset.
+Loads from the instructor-provided pickle file named 'MNIST' (no extension).
+
+Data format inside the pickle:
+    {
+        'train': [ {'image': ndarray(28,28), 'label': int}, ... ],
+        'test':  [ {'image': ndarray(28,28), 'label': int}, ... ]
+    }
+'''
+
 import pickle
-from matplotlib import pyplot as plt
 import numpy as np
 
-# loading ORL dataset
-class Dataset_Loader(dataset):
-    data = None
-    dataset_source_folder_path = None
-    dataset_source_file_name = None
 
-    def __init__(self, dName=None, dDescription=None):
-        super().__init__(dName, dDescription)
+class Dataset_Loader_MNIST:
+
+    def __init__(self):
+        self.data_root = '../../data/stage_3_data/MNIST'
 
     def load(self):
-        if 1:
-            f = open(self.dataset_source_folder_path + self.dataset_source_file_name, 'rb')
-            data = pickle.load(f)
-            f.close()
+        file_path = self.data_root  # full path to the pickle file named 'MNIST'
 
-            X_train = []
-            y_train = []
+        with open(file_path, 'rb') as f:
+            raw = pickle.load(f)
 
-            for instance in data['train']:
-                image_matrix = instance['image'][:, :, 0]
-                image_label = instance['label']
-                X_train.append(image_matrix)
-                y_train.append(image_label - 1)
-                #plt.imshow(image_matrix)
-                #plt.show()
-                #print(image_matrix)
-                #print(image_label)
-                # remove the following "break" code if you would like to see more image in the training set
-                # break
+        def extract(split):
+            X, y = [], []
+            for instance in raw[split]:
+                img = np.array(instance['image'], dtype=np.float32) / 255.0
+                # shape: (28,28) -> add channel dim -> (1,28,28)
+                X.append(img[np.newaxis, :, :])
+                y.append(int(instance['label']))
+            return np.stack(X), np.array(y, dtype=np.int64)
 
-            X_test = []
-            y_test = []
+        X_train, y_train = extract('train')
+        X_test,  y_test  = extract('test')
 
-            for instance in data['test']:
-                image_matrix = instance['image'][:, :, 0]
-                image_label = instance['label']
-                X_test.append(image_matrix)
-                y_test.append(image_label - 1)
-                #plt.imshow(image_matrix)
-                #plt.show()
-                #print(image_matrix)
-                #print(image_label)
-                # remove the following "break" code if you would like to see more image in the testing set
-                # break
+        print(f'[MNIST] Train: {X_train.shape}, Test: {X_test.shape}')
 
-            X_train = np.array(X_train) / 255.0
-            y_train = np.array(y_train)
-            X_test = np.array(X_test) / 255.0
-            y_test = np.array(y_test)
-
-            return {'X_train': X_train, 'y_train': y_train,
-                    'X_test': X_test, 'y_test': y_test}
-
-        return None
-
-        # loading CIFAR-10 dataset
-        if 0:
-            f = open(self.dataset_source_folder_path + 'CIFAR', 'rb')
-            data = pickle.load(f)
-            f.close()
-            for instance in data['train']:
-                image_matrix = instance['image']
-                image_label = instance['label']
-                plt.imshow(image_matrix)
-                plt.show()
-                print(image_matrix)
-                print(image_label)
-                # remove the following "break" code if you would like to see more image in the training set
-                break
-
-            for instance in data['test']:
-                image_matrix = instance['image']
-                image_label = instance['label']
-                plt.imshow(image_matrix)
-                plt.show()
-                print(image_matrix)
-                print(image_label)
-                # remove the following "break" code if you would like to see more image in the testing set
-                break
-
-        # loading MNIST dataset
-        if 0:
-            f = open(self.dataset_source_folder_path + 'MNIST', 'rb')
-            data = pickle.load(f)
-            f.close()
-            for instance in data['train']:
-                image_matrix = instance['image']
-                image_label = instance['label']
-                plt.imshow(image_matrix, cmap='gray')
-                plt.show()
-                print(image_matrix)
-                print(image_label)
-                # remove the following "break" code if you would like to see more image in the training set
-                break
-
-            for instance in data['test']:
-                image_matrix = instance['image']
-                image_label = instance['label']
-                plt.imshow(image_matrix, cmap='gray')
-                plt.show()
-                print(image_matrix)
-                print(image_label)
-                # remove the following "break" code if you would like to see more image in the testing set
-                break
-	
-	
-	
+        return {
+            'train': {'X': X_train, 'y': y_train},
+            'test':  {'X': X_test,  'y': y_test},
+        }
