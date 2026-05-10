@@ -1,6 +1,6 @@
 '''
 Concrete IO class for MNIST dataset.
-Loads from the instructor-provided pickle file named 'MNIST' (no extension).
+
 
 Data format inside the pickle:
     {
