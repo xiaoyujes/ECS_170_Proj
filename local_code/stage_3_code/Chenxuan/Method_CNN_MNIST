@@ -1,0 +1,151 @@
+from local_code.base_class.method import method
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import TensorDataset, DataLoader
+import numpy as np
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+
+
+class Method_CNN_MNIST(method, nn.Module):
+    data = None
+    max_epoch = 10
+    learning_rate = 0.001
+    batch_size = 64
+
+    def __init__(self, mName, mDescription):
+        self.history = []
+        method.__init__(self, mName, mDescription)
+        nn.Module.__init__(self)
+
+        self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
+        self.pool = nn.MaxPool2d(2, 2)
+
+        self.conv2 = nn.Conv2d(32, 64, 3, padding=1)
+
+        self.fc1 = nn.Linear(64 * 7 * 7, 128)
+        self.dropout = nn.Dropout(0.3)
+        self.fc2 = nn.Linear(128, 10)
+
+    def forward(self, x):
+        x = self.pool(F.relu(self.conv1(x)))   # [N, 1, 28, 28] -> [N, 32, 14, 14]
+        x = self.pool(F.relu(self.conv2(x)))   # [N, 32, 14, 14] -> [N, 64, 7, 7]
+        x = torch.flatten(x, 1)                # [N, 64, 7, 7] -> [N, 3136]
+        x = F.relu(self.fc1(x))                # [N, 3136] -> [N, 128]
+        x = self.dropout(x)
+        x = self.fc2(x)                        # [N, 128] -> [N, 10]
+        return x                               # raw logits
+
+    def _prepare_tensors(self, dataset_split):
+        images = []
+        labels = []
+
+        for item in dataset_split:
+            img = np.array(item['image'], dtype=np.float32)
+
+            if img.max() > 1.0:
+                img = img / 255.0
+
+            if img.ndim == 2:
+                img = np.expand_dims(img, axis=0)   # [1, 28, 28]
+
+            images.append(img)
+            labels.append(int(item['label']))
+
+        X = torch.tensor(np.array(images), dtype=torch.float32)
+        y = torch.tensor(np.array(labels), dtype=torch.long)
+        return X, y
+
+    def train_model(self, train_dataset):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.to(device)
+
+        X_train, y_train = self._prepare_tensors(train_dataset)
+        train_loader = DataLoader(
+            TensorDataset(X_train, y_train),
+            batch_size=self.batch_size,
+            shuffle=True
+        )
+
+        criterion = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+
+        for epoch in range(self.max_epoch):
+            self.train()
+            running_loss = 0.0
+
+            all_preds = []
+            all_labels = []
+
+            for inputs, labels in train_loader:
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+
+                optimizer.zero_grad()
+
+                outputs = self.forward(inputs)
+                loss = criterion(outputs, labels)
+
+                loss.backward()
+                optimizer.step()
+
+                running_loss += loss.item()
+
+                preds = torch.argmax(outputs, dim=1)
+                all_preds.extend(preds.detach().cpu().numpy())
+                all_labels.extend(labels.detach().cpu().numpy())
+
+            avg_loss = running_loss / len(train_loader)
+            acc = accuracy_score(all_labels, all_preds)
+            precision = precision_score(all_labels, all_preds, average='weighted', zero_division=0)
+            recall = recall_score(all_labels, all_preds, average='weighted', zero_division=0)
+            f1 = f1_score(all_labels, all_preds, average='weighted', zero_division=0)
+
+            print(f"Epoch {epoch+1}/{self.max_epoch} | Loss: {avg_loss:.4f} | "
+                  f"Accuracy: {acc:.4f} | Precision: {precision:.4f} | "
+                  f"Recall: {recall:.4f} | F1: {f1:.4f}")
+
+            self.history.append({
+                'epoch': epoch + 1,
+                'loss': avg_loss,
+                'accuracy': acc,
+                'precision_weighted': precision,
+                'recall_weighted': recall,
+                'f1_weighted': f1
+            })
+
+    def test(self, test_dataset):
+        device = next(self.parameters()).device
+        self.eval()
+
+        X_test, y_test = self._prepare_tensors(test_dataset)
+        test_loader = DataLoader(
+            TensorDataset(X_test, y_test),
+            batch_size=self.batch_size,
+            shuffle=False
+        )
+
+        all_preds = []
+        all_labels = []
+
+        with torch.no_grad():
+            for inputs, labels in test_loader:
+                inputs = inputs.to(device)
+                outputs = self.forward(inputs)
+                preds = torch.argmax(outputs, dim=1)
+
+                all_preds.extend(preds.cpu().numpy())
+                all_labels.extend(labels.numpy())
+
+        return {
+            'pred_y': np.array(all_preds),
+            'true_y': np.array(all_labels),
+            'history': self.history
+        }
+
+    def run(self):
+        print('method running...')
+        print('--start training...')
+        self.train_model(self.data['train'])
+        print('--start testing...')
+        return self.test(self.data['test'])
