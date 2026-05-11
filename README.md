@@ -18,6 +18,7 @@ Our group used the MLP source code from the stage 1 directory provided to us to 
 - **Full-batch MLP written by Jeslyn**: this model achieved a final testing accuracy of 97.55%
 - **Mini-batch MLP written by Luna**: this model achieved a final testing accuracy of 98.62%
 
+**Overal Final Model Performances:**
 | MLP Model | Accuracy | Weighted F1 | Weighted Precision | Weighted Recall |
 | :-------: | :------: | :---------: | :----------------: | :-------------: |
 | Full-batch | 97.55% | 0.9755 | 0.9755 | 0.9755 |
@@ -32,17 +33,17 @@ In this stage of the project, our group used the following sources as our source
 
 Our goal for this stage was to build CNN models to classify image data for object recognition. We had three image datasets provided to us: 
 
-1. MNIST: hand-written digit images (grey-scale)
+1. **MNIST**: hand-written digit images (grey-scale)
     - Training: 60000 instances
     - Testing: 10000 instances
     - Image size: 28 x 28
     - Labels: each image is associated with a single label indicating the digit number {0, 1, ..., 9}
-2. ORL: face images (grey-scale)
+2. **ORL**: face images (grey-scale)
     - Training: 360 instances
     - Testing: 40 instances
     - Image size: 112 x 92 x 3
     - Labels: each image is associated with a single label indicating the person {1, 2, ..., 40}
-3. CIFAR: colored objects
+3. **CIFAR**: colored objects
     - Training: 50000 instances
     - Testing: 10000 instances
     - Image size: 32 x 32 x 3
@@ -62,3 +63,7 @@ FOr each of the datasets, we tested various architectures and selected the best 
 | ORL deep | 100% | 1.000 | 1.000 | 1.000 |
 | ORL ResNet | 100% | 1.000 | 1.000 | 1.000 |
 | CIFAR-10 deep | 85.60% | 0.8557 | 0.8597 | 0.8560 |
+
+## Stage 4: RNN
+
+## Stage 5: GNN
