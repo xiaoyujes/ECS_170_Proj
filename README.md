@@ -49,7 +49,7 @@ Our goal for this stage was to build CNN models to classify image data for objec
     - Image size: 32 x 32 x 3
     - Labels: each image is associated with a single label indicating the object in the label {0, 1, ..., 9}
 
-FOr each of the datasets, we tested various architectures and selected the best models for each dataset: 
+For each of the datasets, we tested various architectures and selected the best models for each dataset: 
 
 - **MNIST Deep Model Written by Arya**: this model achieved a final testing accuracy of 99.36%
 - **ORL Deep Model Written by Arya**: this model achieved a final testing accuracy of 100%
