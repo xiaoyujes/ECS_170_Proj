@@ -64,8 +64,8 @@ if 1:
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.title('ResNet18 Loss Convergence Plot - ORL')
+    plt.legend(loc='upper right', fontsize=11, framealpha=0.9, shadow=True)
     plt.grid(True)
-
     plt.tight_layout()
     plt.savefig('../../../result/stage_3_result/Jeslyn/ResNet18_ORL_learning_curves.png')
     plt.show()
