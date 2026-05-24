@@ -1,0 +1,34 @@
+=== Generated Text Samples ===
+
+Sample 1:
+  Starting words : what did the
+  Generated text : what did the turkey say about the television program from the 1950s theres
+
+Sample 2:
+  Starting words : why did the
+  Generated text : why did the rapper visit the urologist because his flows were so sick
+
+Sample 3:
+  Starting words : two artists had
+  Generated text : two artists had
+
+Sample 4:
+  Starting words : dont you hate
+  Generated text : dont you hate an elephant with
+
+Sample 5:
+  Starting words : i like my
+  Generated text : i like my laptop i died its
+
+Sample 6:
+  Starting words : what do you
+  Generated text : what do you call
+
+Sample 7:
+  Starting words : how do baby
+  Generated text : how do baby have lts feet they go to run around in the car will get you nowhere
+
+Sample 8:
+  Starting words : why did pizza
+  Generated text : why did pizza have lts and not newer versions
+
