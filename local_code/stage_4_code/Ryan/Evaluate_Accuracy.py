@@ -1,0 +1,42 @@
+from local_code.base_class.evaluate import evaluate
+from sklearn.metrics import accuracy_score, f1_score
+import numpy as np
+import torch
+
+
+class Evaluate_Accuracy(evaluate):
+
+    data = None
+
+    def evaluate(self):
+
+        print('evaluating Stage 4 performance...')
+
+        y_true = self.data['true_y']
+        y_pred = self.data['pred_y']
+
+        if torch.is_tensor(y_true):
+            y_true = y_true.detach().cpu().numpy()
+
+        if torch.is_tensor(y_pred):
+            y_pred = y_pred.detach().cpu().numpy()
+
+        y_true = np.array(y_true).reshape(-1)
+        y_pred = np.array(y_pred).reshape(-1)
+
+        accuracy = accuracy_score(y_true, y_pred)
+
+        f1 = f1_score(
+            y_true,
+            y_pred,
+            average='weighted',
+            zero_division=0
+        )
+
+        print(f"Accuracy: {accuracy:.4f}")
+        print(f"F1-score: {f1:.4f}")
+
+        return {
+            'accuracy': accuracy,
+            'f1': f1
+        }
