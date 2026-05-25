@@ -66,4 +66,32 @@ For each of the datasets, we tested various architectures and selected the best 
 
 ## Stage 4: RNN
 
+In stage 4 of this project, our group used the following sources as our source code: 
+1. [RNN with Pytorch](https://docs.pytorch.org/docs/2.12/generated/torch.nn.RNN.html)
+2. [GRU with Pytorch](https://docs.pytorch.org/docs/2.12/generated/torch.nn.GRU.html)
+3. [LSTM with Pytorch](https://docs.pytorch.org/docs/2.12/generated/torch.nn.LSTM.html)
+
+Our goal for this stage was to build RNN, GRU, and LSTM models to complete 2 tasks: 
+1. **Text Classification**: perform binary classification to classify IMDB reviews into positive or negative classes 
+2. **Text Generation**: generate whole jokes based on a given input of three start words
+
+We were provided 2 datasets: 
+1. **IMDB Movie Reviews**: 
+    - Training: 25000 reviews
+    - Testing: 25000 reviews
+    - Label: Negative - score \(\le \) 4/10; Positive - score \(\ge \) 7/10
+2. **Short Jokes**:
+    - 1622 short jokes
+
+For both tasks, our group built and trained RNN, GRU, and LSTM models. We tested various architectures to compare the results:
+- **RNN, GRU, LSTM Text Classification Model Written by Luna**: this models all achieved final accuracies of 88.47%, 89.79%, and 89.76% respectively
+- **RNN, GRU, LSTM Text Generation Model Written by Jeslyn**: evaluation of this model was by seeing whether the generated results are coherent or not (Note: Jeslyn wrote all models, and trained RNN and LSTM, Chenxuan trained the GRU model)
+
+**Overal Final Text Classification Model Performances:**
+| Model | Best Epoch | Accuracy | F1 | Precision | Recall |
+| :---: | :--------: | :------: | :---: | :-------: | :-------: |
+| RNN | 8 | 88.47% | 0.8847 | 0.8847 | 0.8847 |
+| GRU | 11 | 89.79% | 0.8979 | 0.8979 | 0.8979 |
+| LSTM | 8 | 88.76% | 0.8876 | 0.8876 | 0.8876 |
+
 ## Stage 5: GNN
