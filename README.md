@@ -79,7 +79,7 @@ We were provided 2 datasets:
 1. **IMDB Movie Reviews**: 
     - Training: 25000 reviews
     - Testing: 25000 reviews
-    - Label: Negative - score \(\le \) 4/10; Positive - score \(\ge \) 7/10
+    - Label: Negative - score $\le$ 4/10; Positive - score $\ge$ 7/10
 2. **Short Jokes**:
     - 1622 short jokes
 
