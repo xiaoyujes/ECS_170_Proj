@@ -1,0 +1,198 @@
+C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\.venv\Scripts\python.exe C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\script\stage_5_script\script_gcn.py
+************ Start ************
+dataset: cora , method: graph convolutional network , setting: given node split , result: saver , evaluation: accuracy
+Loading cora dataset...
+method running...
+--start training...
+Epoch: 0001 loss_train: 2.0085 acc_train: 0.0786 loss_val: 1.9071 acc_val: 0.1967 time: 0.1442s
+Epoch: 0011 loss_train: 1.5810 acc_train: 0.4929 loss_val: 1.7768 acc_val: 0.3600 time: 0.0476s
+Epoch: 0021 loss_train: 1.2326 acc_train: 0.7071 loss_val: 1.5888 acc_val: 0.4400 time: 0.0440s
+Epoch: 0031 loss_train: 0.9130 acc_train: 0.9071 loss_val: 1.3389 acc_val: 0.6433 time: 0.0495s
+Epoch: 0041 loss_train: 0.6801 acc_train: 0.9357 loss_val: 1.1420 acc_val: 0.7700 time: 0.0433s
+Epoch: 0051 loss_train: 0.5083 acc_train: 0.9500 loss_val: 0.9963 acc_val: 0.7933 time: 0.0449s
+Epoch: 0061 loss_train: 0.4339 acc_train: 0.9643 loss_val: 0.9029 acc_val: 0.8000 time: 0.0453s
+Epoch: 0071 loss_train: 0.3668 acc_train: 0.9786 loss_val: 0.8453 acc_val: 0.8100 time: 0.0409s
+Epoch: 0081 loss_train: 0.3208 acc_train: 0.9786 loss_val: 0.8127 acc_val: 0.8033 time: 0.0372s
+Epoch: 0091 loss_train: 0.2912 acc_train: 0.9929 loss_val: 0.7925 acc_val: 0.8000 time: 0.0377s
+Epoch: 0101 loss_train: 0.2497 acc_train: 0.9929 loss_val: 0.7687 acc_val: 0.8100 time: 0.0430s
+Epoch: 0111 loss_train: 0.2509 acc_train: 0.9857 loss_val: 0.7496 acc_val: 0.8167 time: 0.0443s
+Epoch: 0121 loss_train: 0.2474 acc_train: 0.9929 loss_val: 0.7417 acc_val: 0.8033 time: 0.0443s
+Epoch: 0131 loss_train: 0.2212 acc_train: 0.9929 loss_val: 0.7330 acc_val: 0.8067 time: 0.0455s
+Epoch: 0141 loss_train: 0.2247 acc_train: 0.9929 loss_val: 0.7263 acc_val: 0.8033 time: 0.0418s
+Epoch: 0151 loss_train: 0.1998 acc_train: 0.9857 loss_val: 0.7257 acc_val: 0.8033 time: 0.0416s
+Epoch: 0161 loss_train: 0.1944 acc_train: 0.9929 loss_val: 0.7252 acc_val: 0.8100 time: 0.0458s
+Epoch: 0171 loss_train: 0.2115 acc_train: 0.9857 loss_val: 0.7107 acc_val: 0.8033 time: 0.0403s
+Epoch: 0181 loss_train: 0.1814 acc_train: 0.9929 loss_val: 0.7147 acc_val: 0.8000 time: 0.0363s
+Epoch: 0191 loss_train: 0.1826 acc_train: 1.0000 loss_val: 0.7060 acc_val: 0.7967 time: 0.0443s
+Epoch: 0201 loss_train: 0.1903 acc_train: 0.9929 loss_val: 0.7105 acc_val: 0.8033 time: 0.0482s
+Epoch: 0211 loss_train: 0.1774 acc_train: 0.9929 loss_val: 0.7090 acc_val: 0.8033 time: 0.0554s
+Epoch: 0221 loss_train: 0.1693 acc_train: 0.9929 loss_val: 0.7027 acc_val: 0.8133 time: 0.0418s
+Epoch: 0231 loss_train: 0.1856 acc_train: 0.9857 loss_val: 0.6877 acc_val: 0.8233 time: 0.0473s
+Epoch: 0241 loss_train: 0.1801 acc_train: 0.9929 loss_val: 0.6987 acc_val: 0.8067 time: 0.0477s
+Epoch: 0251 loss_train: 0.1675 acc_train: 0.9857 loss_val: 0.7089 acc_val: 0.8100 time: 0.0460s
+Epoch: 0261 loss_train: 0.1704 acc_train: 0.9929 loss_val: 0.6905 acc_val: 0.8100 time: 0.0426s
+Epoch: 0271 loss_train: 0.1621 acc_train: 0.9929 loss_val: 0.6881 acc_val: 0.8067 time: 0.0425s
+Epoch: 0281 loss_train: 0.1829 acc_train: 0.9786 loss_val: 0.6943 acc_val: 0.8067 time: 0.0364s
+Epoch: 0291 loss_train: 0.1722 acc_train: 0.9929 loss_val: 0.6987 acc_val: 0.8167 time: 0.0420s
+Epoch: 0301 loss_train: 0.1704 acc_train: 0.9929 loss_val: 0.7003 acc_val: 0.8100 time: 0.0385s
+Epoch: 0311 loss_train: 0.1696 acc_train: 0.9929 loss_val: 0.6883 acc_val: 0.8067 time: 0.0403s
+Epoch: 0321 loss_train: 0.1536 acc_train: 0.9929 loss_val: 0.6848 acc_val: 0.8100 time: 0.0405s
+Epoch: 0331 loss_train: 0.1681 acc_train: 0.9929 loss_val: 0.7042 acc_val: 0.8033 time: 0.0419s
+Epoch: 0341 loss_train: 0.1660 acc_train: 0.9929 loss_val: 0.6987 acc_val: 0.8100 time: 0.0448s
+Epoch: 0350 loss_train: 0.1681 acc_train: 1.0000 loss_val: 0.6875 acc_val: 0.8033 time: 0.0353s
+--start testing...
+Restoring best validation model from epoch: 88
+Test set results: loss= 0.7106 accuracy= 0.8380
+saving results...
+Prediction results saved to: C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\result\stage_5_result\gcn_cora_bestval_wide_h128_lr0.008_wd5e-4_do0.5_ep350_seed9_prediction_result.pkl
+Training history saved to: C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\result\stage_5_result\gcn_cora_bestval_wide_h128_lr0.008_wd5e-4_do0.5_ep350_seed9_prediction_result_history.csv
+************ Overall Performance ************
+Dataset: cora
+Config: bestval_wide_h128_lr0.008_wd5e-4_do0.5_ep350_seed9
+GCN Accuracy: 0.838
+F1-Score weighted: 0.8375952766422031
+Recall weighted: 0.838
+Precision weighted: 0.8415511354964129
+F1-Score macro: 0.8234841655334743
+Recall macro: 0.814376239704515
+Precision macro: 0.8385328069680853
+F1-Score micro: 0.838
+Recall micro: 0.838
+Precision micro: 0.838
+************ Finish ************
+************ Start ************
+dataset: citeseer , method: graph convolutional network , setting: given node split , result: saver , evaluation: accuracy
+Loading citeseer dataset...
+method running...
+--start training...
+Epoch: 0001 loss_train: 1.8740 acc_train: 0.0333 loss_val: 1.7860 acc_val: 0.2467 time: 0.0534s
+Epoch: 0011 loss_train: 1.5994 acc_train: 0.5750 loss_val: 1.8492 acc_val: 0.2033 time: 0.0454s
+Epoch: 0021 loss_train: 1.4357 acc_train: 0.6250 loss_val: 1.9944 acc_val: 0.2167 time: 0.0479s
+Epoch: 0031 loss_train: 1.2995 acc_train: 0.6417 loss_val: 2.0580 acc_val: 0.1733 time: 0.0426s
+Epoch: 0041 loss_train: 1.1743 acc_train: 0.6833 loss_val: 2.0357 acc_val: 0.1867 time: 0.0429s
+Epoch: 0051 loss_train: 1.0356 acc_train: 0.7250 loss_val: 2.0070 acc_val: 0.2067 time: 0.0414s
+Epoch: 0061 loss_train: 0.9015 acc_train: 0.7667 loss_val: 1.9678 acc_val: 0.2367 time: 0.0474s
+Epoch: 0071 loss_train: 0.7963 acc_train: 0.8583 loss_val: 1.9175 acc_val: 0.2367 time: 0.0427s
+Epoch: 0081 loss_train: 0.7336 acc_train: 0.8333 loss_val: 1.8591 acc_val: 0.2733 time: 0.0477s
+Epoch: 0091 loss_train: 0.6454 acc_train: 0.8750 loss_val: 1.8129 acc_val: 0.2967 time: 0.0427s
+Epoch: 0101 loss_train: 0.5882 acc_train: 0.8667 loss_val: 1.7717 acc_val: 0.3433 time: 0.0457s
+Epoch: 0111 loss_train: 0.5582 acc_train: 0.8667 loss_val: 1.7356 acc_val: 0.3567 time: 0.0479s
+Epoch: 0121 loss_train: 0.5116 acc_train: 0.8917 loss_val: 1.7032 acc_val: 0.3733 time: 0.0474s
+Epoch: 0131 loss_train: 0.4798 acc_train: 0.9167 loss_val: 1.6674 acc_val: 0.3900 time: 0.0463s
+Epoch: 0141 loss_train: 0.4419 acc_train: 0.9250 loss_val: 1.6317 acc_val: 0.4133 time: 0.0461s
+Epoch: 0151 loss_train: 0.4343 acc_train: 0.9417 loss_val: 1.6277 acc_val: 0.4167 time: 0.0475s
+Epoch: 0161 loss_train: 0.4347 acc_train: 0.9333 loss_val: 1.6060 acc_val: 0.4133 time: 0.0455s
+Epoch: 0171 loss_train: 0.3740 acc_train: 0.9583 loss_val: 1.5757 acc_val: 0.4233 time: 0.0444s
+Epoch: 0181 loss_train: 0.3839 acc_train: 0.9417 loss_val: 1.5643 acc_val: 0.4433 time: 0.0458s
+Epoch: 0191 loss_train: 0.3732 acc_train: 0.9417 loss_val: 1.5512 acc_val: 0.4300 time: 0.0442s
+Epoch: 0201 loss_train: 0.3554 acc_train: 0.9500 loss_val: 1.5337 acc_val: 0.4400 time: 0.0494s
+Epoch: 0211 loss_train: 0.3340 acc_train: 0.9500 loss_val: 1.5214 acc_val: 0.4600 time: 0.0478s
+Epoch: 0221 loss_train: 0.3387 acc_train: 0.9500 loss_val: 1.5212 acc_val: 0.4433 time: 0.0427s
+Epoch: 0231 loss_train: 0.3011 acc_train: 0.9667 loss_val: 1.5021 acc_val: 0.4500 time: 0.0395s
+Epoch: 0241 loss_train: 0.3118 acc_train: 0.9500 loss_val: 1.4922 acc_val: 0.4567 time: 0.0474s
+Epoch: 0251 loss_train: 0.3079 acc_train: 0.9667 loss_val: 1.4965 acc_val: 0.4400 time: 0.0493s
+Epoch: 0261 loss_train: 0.2790 acc_train: 0.9667 loss_val: 1.4870 acc_val: 0.4367 time: 0.0450s
+Epoch: 0271 loss_train: 0.2661 acc_train: 0.9750 loss_val: 1.4922 acc_val: 0.4433 time: 0.0413s
+Epoch: 0281 loss_train: 0.2775 acc_train: 0.9750 loss_val: 1.4738 acc_val: 0.4533 time: 0.0439s
+Epoch: 0291 loss_train: 0.2531 acc_train: 0.9583 loss_val: 1.4778 acc_val: 0.4467 time: 0.0477s
+Epoch: 0301 loss_train: 0.2497 acc_train: 0.9667 loss_val: 1.4613 acc_val: 0.4667 time: 0.0491s
+Epoch: 0311 loss_train: 0.2370 acc_train: 0.9833 loss_val: 1.4511 acc_val: 0.4600 time: 0.0441s
+Epoch: 0321 loss_train: 0.2449 acc_train: 0.9833 loss_val: 1.4535 acc_val: 0.4700 time: 0.0469s
+Epoch: 0331 loss_train: 0.2287 acc_train: 0.9750 loss_val: 1.4580 acc_val: 0.4567 time: 0.0470s
+Epoch: 0341 loss_train: 0.2256 acc_train: 0.9667 loss_val: 1.4381 acc_val: 0.4600 time: 0.0499s
+Epoch: 0351 loss_train: 0.2345 acc_train: 0.9750 loss_val: 1.4527 acc_val: 0.4500 time: 0.0442s
+Epoch: 0361 loss_train: 0.2169 acc_train: 0.9917 loss_val: 1.4323 acc_val: 0.4533 time: 0.0422s
+Epoch: 0371 loss_train: 0.2364 acc_train: 0.9667 loss_val: 1.4515 acc_val: 0.4533 time: 0.0471s
+Epoch: 0381 loss_train: 0.2264 acc_train: 0.9917 loss_val: 1.4356 acc_val: 0.4700 time: 0.0494s
+Epoch: 0391 loss_train: 0.2195 acc_train: 0.9833 loss_val: 1.4237 acc_val: 0.4767 time: 0.0458s
+Epoch: 0401 loss_train: 0.2054 acc_train: 0.9750 loss_val: 1.4119 acc_val: 0.4700 time: 0.0434s
+Epoch: 0411 loss_train: 0.2121 acc_train: 0.9750 loss_val: 1.4328 acc_val: 0.4667 time: 0.0455s
+Epoch: 0421 loss_train: 0.2114 acc_train: 0.9833 loss_val: 1.4209 acc_val: 0.4533 time: 0.0492s
+Epoch: 0431 loss_train: 0.2071 acc_train: 0.9917 loss_val: 1.4257 acc_val: 0.4667 time: 0.0519s
+Epoch: 0441 loss_train: 0.2003 acc_train: 0.9833 loss_val: 1.4301 acc_val: 0.4600 time: 0.0446s
+Epoch: 0451 loss_train: 0.2012 acc_train: 0.9750 loss_val: 1.4052 acc_val: 0.4667 time: 0.0465s
+Epoch: 0461 loss_train: 0.1893 acc_train: 0.9833 loss_val: 1.4197 acc_val: 0.4800 time: 0.0489s
+Epoch: 0471 loss_train: 0.2027 acc_train: 0.9833 loss_val: 1.4117 acc_val: 0.4800 time: 0.0467s
+Epoch: 0481 loss_train: 0.1862 acc_train: 0.9833 loss_val: 1.4000 acc_val: 0.4733 time: 0.0420s
+Epoch: 0491 loss_train: 0.1816 acc_train: 1.0000 loss_val: 1.4051 acc_val: 0.4800 time: 0.0509s
+Epoch: 0500 loss_train: 0.1973 acc_train: 0.9833 loss_val: 1.4003 acc_val: 0.4767 time: 0.0485s
+--start testing...
+Test set results: loss= 0.9187 accuracy= 0.7170
+saving results...
+Prediction results saved to: C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\result\stage_5_result\gcn_citeseer_wide_h64_lr0.005_wd5e-4_do0.45_ep500_seed6_prediction_result.pkl
+Training history saved to: C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\result\stage_5_result\gcn_citeseer_wide_h64_lr0.005_wd5e-4_do0.45_ep500_seed6_prediction_result_history.csv
+************ Overall Performance ************
+Dataset: citeseer
+Config: wide_h64_lr0.005_wd5e-4_do0.45_ep500_seed6
+GCN Accuracy: 0.717
+F1-Score weighted: 0.6740779733128487
+Recall weighted: 0.717
+Precision weighted: 0.7106430520514125
+F1-Score macro: 0.5303965628439679
+Recall macro: 0.5349435028630646
+Precision macro: 0.6929431104972427
+F1-Score micro: 0.717
+Recall micro: 0.717
+Precision micro: 0.717
+************ Finish ************
+************ Start ************
+dataset: pubmed , method: graph convolutional network , setting: given node split , result: saver , evaluation: accuracy
+Loading pubmed dataset...
+method running...
+--start training...
+Epoch: 0001 loss_train: 1.1695 acc_train: 0.3333 loss_val: 1.1494 acc_val: 0.2360 time: 0.1374s
+Epoch: 0011 loss_train: 0.9371 acc_train: 0.5667 loss_val: 1.0451 acc_val: 0.3560 time: 0.1207s
+Epoch: 0021 loss_train: 0.7263 acc_train: 0.8500 loss_val: 0.8846 acc_val: 0.7240 time: 0.1208s
+Epoch: 0031 loss_train: 0.4945 acc_train: 0.9500 loss_val: 0.7514 acc_val: 0.7740 time: 0.1297s
+Epoch: 0041 loss_train: 0.3519 acc_train: 1.0000 loss_val: 0.6758 acc_val: 0.7800 time: 0.1311s
+Epoch: 0051 loss_train: 0.2287 acc_train: 1.0000 loss_val: 0.6365 acc_val: 0.7820 time: 0.1261s
+Epoch: 0061 loss_train: 0.2144 acc_train: 1.0000 loss_val: 0.6077 acc_val: 0.7860 time: 0.1132s
+Epoch: 0071 loss_train: 0.1769 acc_train: 1.0000 loss_val: 0.5956 acc_val: 0.7900 time: 0.1208s
+Epoch: 0081 loss_train: 0.1381 acc_train: 1.0000 loss_val: 0.5926 acc_val: 0.7900 time: 0.1434s
+Epoch: 0091 loss_train: 0.1320 acc_train: 1.0000 loss_val: 0.5738 acc_val: 0.8000 time: 0.1578s
+Epoch: 0101 loss_train: 0.1244 acc_train: 1.0000 loss_val: 0.5788 acc_val: 0.7920 time: 0.1546s
+Epoch: 0111 loss_train: 0.1302 acc_train: 1.0000 loss_val: 0.5945 acc_val: 0.7980 time: 0.1479s
+Epoch: 0121 loss_train: 0.1119 acc_train: 1.0000 loss_val: 0.6213 acc_val: 0.7900 time: 0.1554s
+Epoch: 0131 loss_train: 0.1172 acc_train: 1.0000 loss_val: 0.5793 acc_val: 0.8020 time: 0.1304s
+Epoch: 0141 loss_train: 0.1021 acc_train: 1.0000 loss_val: 0.5681 acc_val: 0.7960 time: 0.1476s
+Epoch: 0151 loss_train: 0.0900 acc_train: 1.0000 loss_val: 0.5744 acc_val: 0.7980 time: 0.1468s
+Epoch: 0161 loss_train: 0.0911 acc_train: 1.0000 loss_val: 0.5671 acc_val: 0.8040 time: 0.1437s
+Epoch: 0171 loss_train: 0.0917 acc_train: 1.0000 loss_val: 0.5559 acc_val: 0.8120 time: 0.1380s
+Epoch: 0181 loss_train: 0.0827 acc_train: 1.0000 loss_val: 0.5734 acc_val: 0.8060 time: 0.1265s
+Epoch: 0191 loss_train: 0.0896 acc_train: 1.0000 loss_val: 0.5802 acc_val: 0.8080 time: 0.1331s
+Epoch: 0201 loss_train: 0.0832 acc_train: 1.0000 loss_val: 0.5862 acc_val: 0.8040 time: 0.1340s
+Epoch: 0211 loss_train: 0.0829 acc_train: 1.0000 loss_val: 0.5835 acc_val: 0.8020 time: 0.1593s
+Epoch: 0221 loss_train: 0.0791 acc_train: 1.0000 loss_val: 0.5756 acc_val: 0.8000 time: 0.1330s
+Epoch: 0231 loss_train: 0.0834 acc_train: 1.0000 loss_val: 0.5678 acc_val: 0.8040 time: 0.1408s
+Epoch: 0241 loss_train: 0.0813 acc_train: 1.0000 loss_val: 0.5888 acc_val: 0.7920 time: 0.1378s
+Epoch: 0251 loss_train: 0.0847 acc_train: 1.0000 loss_val: 0.5645 acc_val: 0.8060 time: 0.1231s
+Epoch: 0261 loss_train: 0.0694 acc_train: 1.0000 loss_val: 0.5641 acc_val: 0.8000 time: 0.1340s
+Epoch: 0271 loss_train: 0.0816 acc_train: 1.0000 loss_val: 0.5669 acc_val: 0.8060 time: 0.1474s
+Epoch: 0281 loss_train: 0.0738 acc_train: 1.0000 loss_val: 0.5611 acc_val: 0.8080 time: 0.1393s
+Epoch: 0291 loss_train: 0.0886 acc_train: 1.0000 loss_val: 0.5899 acc_val: 0.8000 time: 0.1580s
+Epoch: 0300 loss_train: 0.0657 acc_train: 1.0000 loss_val: 0.5992 acc_val: 0.7940 time: 0.1482s
+--start testing...
+Test set results: loss= 0.5546 accuracy= 0.8150
+saving results...
+Prediction results saved to: C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\result\stage_5_result\gcn_pubmed_randbal_split2_hidden_sweep_h48_lr0.01_wd5e-4_do0.35_ep300_final_prediction_result.pkl
+Training history saved to: C:\Users\zhang\Desktop\ECS170_Spring_2026_Source_Code_Template\result\stage_5_result\gcn_pubmed_randbal_split2_hidden_sweep_h48_lr0.01_wd5e-4_do0.35_ep300_final_prediction_result_history.csv
+************ Overall Performance ************
+Dataset: pubmed
+Config: randbal_split2_hidden_sweep_h48_lr0.01_wd5e-4_do0.35_ep300_final
+GCN Accuracy: 0.815
+F1-Score weighted: 0.814375270581988
+Recall weighted: 0.815
+Precision weighted: 0.8287733934153372
+F1-Score macro: 0.814375270581988
+Recall macro: 0.815
+Precision macro: 0.8287733934153372
+F1-Score micro: 0.815
+Recall micro: 0.815
+Precision micro: 0.815
+************ Finish ************
+************ Stage 5 Summary ************
+cora_bestval_wide_h128_lr0.008_wd5e-4_do0.5_ep350_seed9 accuracy: 0.838 weighted F1: 0.8375952766422031
+citeseer_wide_h64_lr0.005_wd5e-4_do0.45_ep500_seed6 accuracy: 0.717 weighted F1: 0.6740779733128487
+pubmed_randbal_split2_hidden_sweep_h48_lr0.01_wd5e-4_do0.35_ep300_final accuracy: 0.815 weighted F1: 0.814375270581988
+
+Process finished with exit code 0
