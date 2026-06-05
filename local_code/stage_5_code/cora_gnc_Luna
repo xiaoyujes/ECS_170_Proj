@@ -1,0 +1,536 @@
+from __future__ import annotations
+
+import argparse
+import csv
+import os
+import random
+from dataclasses import dataclass, asdict
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.sparse as sp
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+
+# -----------------------------
+# Reproducibility / utilities
+# -----------------------------
+
+def set_seed(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    # Deterministic mode is more reproducible, but can be slightly slower.
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+def pick_device(requested: str) -> torch.device:
+    requested = requested.lower()
+    if requested == "auto":
+        if torch.cuda.is_available():
+            return torch.device("cuda")
+        if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+            return torch.device("mps")
+        return torch.device("cpu")
+    return torch.device(requested)
+
+
+def accuracy(logits: torch.Tensor, labels: torch.Tensor) -> float:
+    pred = logits.argmax(dim=1)
+    return (pred == labels).float().mean().item()
+
+
+def macro_f1_from_logits(logits: torch.Tensor, labels: torch.Tensor, num_classes: int) -> float:
+    pred = logits.argmax(dim=1).detach().cpu().numpy()
+    gold = labels.detach().cpu().numpy()
+    f1s: List[float] = []
+    for c in range(num_classes):
+        tp = np.sum((pred == c) & (gold == c))
+        fp = np.sum((pred == c) & (gold != c))
+        fn = np.sum((pred != c) & (gold == c))
+        precision = tp / (tp + fp + 1e-12)
+        recall = tp / (tp + fn + 1e-12)
+        f1s.append(2 * precision * recall / (precision + recall + 1e-12))
+    return float(np.mean(f1s))
+
+
+def row_normalize_features(mx: sp.spmatrix) -> sp.csr_matrix:
+    """Row-normalize sparse feature matrix: X <- D^{-1}X."""
+    rowsum = np.asarray(mx.sum(1)).flatten()
+    inv = np.power(rowsum, -1.0, where=rowsum != 0)
+    inv[rowsum == 0] = 0.0
+    inv[np.isinf(inv)] = 0.0
+    return sp.diags(inv).dot(mx).tocsr()
+
+
+def normalize_adj(adj: sp.spmatrix) -> sp.coo_matrix:
+    """Symmetric GCN normalization: D^{-1/2}(A+I)D^{-1/2}."""
+    adj = adj + sp.eye(adj.shape[0], dtype=np.float32)
+    rowsum = np.asarray(adj.sum(1)).flatten()
+    inv_sqrt = np.power(rowsum, -0.5, where=rowsum != 0)
+    inv_sqrt[rowsum == 0] = 0.0
+    inv_sqrt[np.isinf(inv_sqrt)] = 0.0
+    d_inv_sqrt = sp.diags(inv_sqrt)
+    return d_inv_sqrt.dot(adj).dot(d_inv_sqrt).tocoo().astype(np.float32)
+
+
+def sparse_mx_to_torch_sparse_tensor(sparse_mx: sp.spmatrix) -> torch.Tensor:
+    sparse_mx = sparse_mx.tocoo().astype(np.float32)
+    indices = torch.from_numpy(np.vstack((sparse_mx.row, sparse_mx.col)).astype(np.int64))
+    values = torch.from_numpy(sparse_mx.data)
+    shape = torch.Size(sparse_mx.shape)
+    return torch.sparse_coo_tensor(indices, values, shape).coalesce()
+
+
+# -----------------------------
+# Data loading / splitting
+# -----------------------------
+
+@dataclass
+class GraphData:
+    features: torch.Tensor
+    adj: torch.Tensor
+    labels: torch.Tensor
+    label_names: List[str]
+    node_ids: np.ndarray
+
+
+def load_instructor_citation_graph(node_file: str, link_file: str) -> GraphData:
+    if not os.path.exists(node_file):
+        raise FileNotFoundError(f"node file not found: {node_file}")
+    if not os.path.exists(link_file):
+        raise FileNotFoundError(f"link file not found: {link_file}")
+
+    # node format: <node_id> <feature_1> ... <feature_d> <label>
+    raw = np.genfromtxt(node_file, dtype=str)
+    if raw.ndim != 2 or raw.shape[1] < 10:
+        raise ValueError(
+            f"The node file should have many columns: <node_id> <features...> <label>.\n"
+            f"I read shape={getattr(raw, 'shape', None)} from {node_file}.\n"
+            f"Common mistake: the link file was passed as --node_file, or macOS .DS_Store was uploaded instead."
+        )
+
+    node_ids = raw[:, 0].astype(np.int64)
+    features_sp = sp.csr_matrix(raw[:, 1:-1].astype(np.float32))
+    features_sp = row_normalize_features(features_sp)
+
+    raw_labels = raw[:, -1]
+    label_names = sorted(set(raw_labels.tolist()))
+    label_to_id = {name: i for i, name in enumerate(label_names)}
+    labels = torch.LongTensor([label_to_id[y] for y in raw_labels])
+
+    # link format: <A> <B>. The loader treats it as an edge between A and B and symmetrizes.
+    edges_unordered = np.genfromtxt(link_file, dtype=np.int64)
+    if edges_unordered.ndim == 1:
+        edges_unordered = edges_unordered.reshape(1, -1)
+    if edges_unordered.ndim != 2 or edges_unordered.shape[1] != 2:
+        raise ValueError(
+            f"The link file should have exactly two columns. I read shape={edges_unordered.shape} from {link_file}.\n"
+            f"Common mistake: macOS .DS_Store was uploaded instead of the actual link file."
+        )
+
+    idx_map = {node_id: i for i, node_id in enumerate(node_ids)}
+    mapped_edges: List[Tuple[int, int]] = []
+    skipped = 0
+    for a, b in edges_unordered:
+        if a in idx_map and b in idx_map:
+            mapped_edges.append((idx_map[a], idx_map[b]))
+        else:
+            skipped += 1
+    if skipped:
+        print(f"Warning: skipped {skipped} links because their node IDs were not in the node file.")
+    if not mapped_edges:
+        raise ValueError("No valid edges found after mapping link endpoints to node IDs.")
+
+    edges = np.asarray(mapped_edges, dtype=np.int64)
+    n = len(node_ids)
+    adj = sp.coo_matrix(
+        (np.ones(edges.shape[0], dtype=np.float32), (edges[:, 0], edges[:, 1])),
+        shape=(n, n),
+        dtype=np.float32,
+    )
+    # Treat citation graph as undirected, same idea as the provided loader.
+    adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
+    adj = normalize_adj(adj)
+
+    features = torch.FloatTensor(np.asarray(features_sp.todense()))
+    return GraphData(
+        features=features,
+        adj=sparse_mx_to_torch_sparse_tensor(adj),
+        labels=labels,
+        label_names=label_names,
+        node_ids=node_ids,
+    )
+
+
+@dataclass
+class Split:
+    train_idx: torch.LongTensor
+    val_idx: torch.LongTensor
+    test_idx: torch.LongTensor
+
+
+def balanced_split(
+    labels: torch.Tensor,
+    train_per_class: int = 20,
+    val_per_class: int = 50,
+    test_per_class: int = 150,
+    seed: int = 42,
+) -> Split:
+    """Class-balanced split. For cora defaults: 140 train, 350 val, 1050 test."""
+    rng = np.random.default_rng(seed)
+    labels_np = labels.cpu().numpy()
+    train: List[int] = []
+    val: List[int] = []
+    test: List[int] = []
+
+    for c in sorted(np.unique(labels_np)):
+        idx = np.where(labels_np == c)[0]
+        rng.shuffle(idx)
+        needed = train_per_class + val_per_class + test_per_class
+        if len(idx) < needed:
+            raise ValueError(
+                f"Class {c} has only {len(idx)} nodes, but split needs {needed}. "
+                f"Reduce --val_per_class or --test_per_class."
+            )
+        train.extend(idx[:train_per_class].tolist())
+        val.extend(idx[train_per_class:train_per_class + val_per_class].tolist())
+        test.extend(idx[train_per_class + val_per_class:needed].tolist())
+
+    rng.shuffle(train)
+    rng.shuffle(val)
+    rng.shuffle(test)
+    return Split(
+        train_idx=torch.LongTensor(train),
+        val_idx=torch.LongTensor(val),
+        test_idx=torch.LongTensor(test),
+    )
+
+
+# -----------------------------
+# GCN model
+# -----------------------------
+
+class GraphConvolution(nn.Module):
+    def __init__(self, in_features: int, out_features: int, bias: bool = True):
+        super().__init__()
+        self.weight = nn.Parameter(torch.empty(in_features, out_features))
+        self.bias = nn.Parameter(torch.empty(out_features)) if bias else None
+        self.reset_parameters()
+
+    def reset_parameters(self) -> None:
+        nn.init.xavier_uniform_(self.weight)
+        if self.bias is not None:
+            nn.init.zeros_(self.bias)
+
+    def forward(self, x: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
+        support = x @ self.weight
+        if adj.is_sparse:
+            out = torch.sparse.mm(adj, support)
+        else:
+            out = adj @ support
+        if self.bias is not None:
+            out = out + self.bias
+        return out
+
+
+class GCN(nn.Module):
+    """Two-layer GCN. This is still the clean, assignment-friendly GCN baseline."""
+    def __init__(self, nfeat: int, nhid: int, nclass: int, dropout: float):
+        super().__init__()
+        self.gc1 = GraphConvolution(nfeat, nhid)
+        self.gc2 = GraphConvolution(nhid, nclass)
+        self.dropout = dropout
+
+    def forward(self, x: torch.Tensor, adj: torch.Tensor) -> torch.Tensor:
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = F.relu(self.gc1(x, adj))
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.gc2(x, adj)
+        return x
+
+
+@dataclass
+class RunConfig:
+    seed: int
+    hidden: int
+    dropout: float
+    lr: float
+    weight_decay: float
+    epochs: int
+    patience: int
+
+
+@dataclass
+class RunResult:
+    seed: int
+    hidden: int
+    dropout: float
+    lr: float
+    weight_decay: float
+    best_epoch: int
+    best_val_acc: float
+    best_val_loss: float
+    test_acc: float
+    test_macro_f1: float
+    curve_path: str
+
+
+def move_graph_to_device(graph: GraphData, split: Split, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+    features = graph.features.to(device)
+    labels = graph.labels.to(device)
+    train_idx = split.train_idx.to(device)
+    val_idx = split.val_idx.to(device)
+    test_idx = split.test_idx.to(device)
+
+    # MPS often has limited sparse support. cora adjacency is small enough to densify on MPS.
+    if device.type == "mps":
+        adj = graph.adj.to_dense().to(device)
+    else:
+        adj = graph.adj.to(device)
+    return features, adj, labels, train_idx, val_idx, test_idx
+
+
+def train_one(
+    graph: GraphData,
+    split: Split,
+    cfg: RunConfig,
+    device: torch.device,
+    out_dir: str,
+    run_name: str,
+) -> Tuple[RunResult, Dict[str, List[float]], torch.Tensor]:
+    set_seed(cfg.seed)
+    features, adj, labels, train_idx, val_idx, test_idx = move_graph_to_device(graph, split, device)
+
+    model = GCN(
+        nfeat=features.shape[1],
+        nhid=cfg.hidden,
+        nclass=len(graph.label_names),
+        dropout=cfg.dropout,
+    ).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
+
+    history: Dict[str, List[float]] = {"train_loss": [], "val_loss": [], "train_acc": [], "val_acc": []}
+    best_state: Optional[Dict[str, torch.Tensor]] = None
+    best_epoch = -1
+    best_val_acc = -1.0
+    best_val_loss = float("inf")
+    patience_left = cfg.patience
+
+    for epoch in range(1, cfg.epochs + 1):
+        model.train()
+        optimizer.zero_grad()
+        logits = model(features, adj)
+        loss_train = F.cross_entropy(logits[train_idx], labels[train_idx])
+        loss_train.backward()
+        optimizer.step()
+
+        model.eval()
+        with torch.no_grad():
+            logits_eval = model(features, adj)
+            loss_val = F.cross_entropy(logits_eval[val_idx], labels[val_idx]).item()
+            train_acc = accuracy(logits_eval[train_idx], labels[train_idx])
+            val_acc = accuracy(logits_eval[val_idx], labels[val_idx])
+
+        history["train_loss"].append(float(loss_train.item()))
+        history["val_loss"].append(float(loss_val))
+        history["train_acc"].append(float(train_acc))
+        history["val_acc"].append(float(val_acc))
+
+        # Select model by validation accuracy; use validation loss as tie-breaker.
+        improved = (val_acc > best_val_acc + 1e-12) or (
+            abs(val_acc - best_val_acc) <= 1e-12 and loss_val < best_val_loss
+        )
+        if improved:
+            best_val_acc = float(val_acc)
+            best_val_loss = float(loss_val)
+            best_epoch = epoch
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            patience_left = cfg.patience
+        else:
+            patience_left -= 1
+            if patience_left <= 0:
+                break
+
+    assert best_state is not None
+    model.load_state_dict({k: v.to(device) for k, v in best_state.items()})
+    model.eval()
+    with torch.no_grad():
+        final_logits = model(features, adj)
+        test_acc = accuracy(final_logits[test_idx], labels[test_idx])
+        test_macro_f1 = macro_f1_from_logits(final_logits[test_idx], labels[test_idx], len(graph.label_names))
+        final_logits_cpu = final_logits.detach().cpu()
+
+    os.makedirs(out_dir, exist_ok=True)
+    curve_path = os.path.join(out_dir, f"learning_curve_{run_name}.png")
+    plot_learning_curve(history, curve_path, title=f"cora GCN: {run_name}")
+
+    return RunResult(
+        seed=cfg.seed,
+        hidden=cfg.hidden,
+        dropout=cfg.dropout,
+        lr=cfg.lr,
+        weight_decay=cfg.weight_decay,
+        best_epoch=best_epoch,
+        best_val_acc=best_val_acc,
+        best_val_loss=best_val_loss,
+        test_acc=float(test_acc),
+        test_macro_f1=float(test_macro_f1),
+        curve_path=curve_path,
+    ), history, final_logits_cpu
+
+
+def plot_learning_curve(history: Dict[str, List[float]], path: str, title: str) -> None:
+    plt.figure()
+    plt.plot(history["train_acc"], label="train accuracy")
+    plt.plot(history["val_acc"], label="validation accuracy")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy")
+    plt.title(title)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(path, dpi=180)
+    plt.close()
+
+
+def write_results_csv(results: Sequence[RunResult], path: str) -> None:
+    if not results:
+        return
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(asdict(results[0]).keys()))
+        writer.writeheader()
+        for r in results:
+            writer.writerow(asdict(r))
+
+
+def make_configs(args: argparse.Namespace) -> List[RunConfig]:
+    if not args.sweep:
+        return [RunConfig(
+            seed=args.model_seed,
+            hidden=args.hidden,
+            dropout=args.dropout,
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+            epochs=args.epochs,
+            patience=args.patience,
+        )]
+
+    # Compact sweep: usually enough to find a stronger cora run without taking forever.
+    seeds = [int(s) for s in args.sweep_seeds.split(",") if s.strip()]
+    hidden_values = [32, 64, 128]
+    dropout_values = [0.35, 0.50, 0.60]
+    lr_values = [0.01, 0.005]
+    wd_values = [5e-4, 1e-3]
+
+    configs: List[RunConfig] = []
+    for seed in seeds:
+        for hidden in hidden_values:
+            for dropout in dropout_values:
+                for lr in lr_values:
+                    for wd in wd_values:
+                        configs.append(RunConfig(
+                            seed=seed,
+                            hidden=hidden,
+                            dropout=dropout,
+                            lr=lr,
+                            weight_decay=wd,
+                            epochs=args.epochs,
+                            patience=args.patience,
+                        ))
+    return configs
+
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Strong cora GCN trainer for Stage 5 node classification.")
+    p.add_argument("--node_file", type=str, default="node", help="Path to cora node file")
+    p.add_argument("--link_file", type=str, default="link", help="Path to cora link file")
+    p.add_argument("--out_dir", type=str, default="cora_gcn_results", help="Directory for curves and CSV results")
+
+    p.add_argument("--split_seed", type=int, default=42, help="Seed for class-balanced split")
+    p.add_argument("--train_per_class", type=int, default=20)
+    p.add_argument("--val_per_class", type=int, default=50)
+    p.add_argument("--test_per_class", type=int, default=150)
+
+    p.add_argument("--hidden", type=int, default=64)
+    p.add_argument("--dropout", type=float, default=0.50)
+    p.add_argument("--lr", type=float, default=0.01)
+    p.add_argument("--weight_decay", type=float, default=5e-4)
+    p.add_argument("--epochs", type=int, default=1000)
+    p.add_argument("--patience", type=int, default=120)
+    p.add_argument("--model_seed", type=int, default=0)
+    p.add_argument("--device", type=str, default="auto", help="auto, cpu, cuda, cuda:0, or mps")
+
+    p.add_argument("--sweep", action="store_true", help="Try multiple hyperparameters and choose by validation accuracy")
+    p.add_argument("--sweep_seeds", type=str, default="0,1,2,3,4", help="Comma-separated model seeds for --sweep")
+    p.add_argument("--ensemble_top_k", type=int, default=0, help="Optional: average logits from top-k validation runs")
+    return p.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+    os.makedirs(args.out_dir, exist_ok=True)
+
+    device = pick_device(args.device)
+    print(f"Using device: {device}")
+    graph = load_instructor_citation_graph(args.node_file, args.link_file)
+    print(f"Loaded graph: nodes={graph.features.shape[0]}, features={graph.features.shape[1]}, classes={len(graph.label_names)}")
+    print(f"Labels: {graph.label_names}")
+
+    split = balanced_split(
+        graph.labels,
+        train_per_class=args.train_per_class,
+        val_per_class=args.val_per_class,
+        test_per_class=args.test_per_class,
+        seed=args.split_seed,
+    )
+    print(f"Split sizes: train={len(split.train_idx)}, val={len(split.val_idx)}, test={len(split.test_idx)}")
+
+    configs = make_configs(args)
+    results: List[RunResult] = []
+    logits_by_run: List[torch.Tensor] = []
+
+    for i, cfg in enumerate(configs, start=1):
+        run_name = f"run{i:03d}_seed{cfg.seed}_h{cfg.hidden}_do{cfg.dropout}_lr{cfg.lr}_wd{cfg.weight_decay}"
+        print(f"[{i}/{len(configs)}] {run_name}")
+        result, _, logits = train_one(graph, split, cfg, device, args.out_dir, run_name)
+        results.append(result)
+        logits_by_run.append(logits)
+        print(
+            f"    best_epoch={result.best_epoch:4d} | "
+            f"val_acc={result.best_val_acc:.4f} | test_acc={result.test_acc:.4f} | "
+            f"macro_f1={result.test_macro_f1:.4f}"
+        )
+
+    results_csv = os.path.join(args.out_dir, "results.csv")
+    write_results_csv(results, results_csv)
+    order = sorted(range(len(results)), key=lambda j: (results[j].best_val_acc, -results[j].best_val_loss), reverse=True)
+    best = results[order[0]]
+
+    print("\nBest single run selected by validation accuracy")
+    print("-" * 60)
+    print(f"seed={best.seed}, hidden={best.hidden}, dropout={best.dropout}, lr={best.lr}, weight_decay={best.weight_decay}")
+    print(f"best_epoch={best.best_epoch}, val_acc={best.best_val_acc:.4f}, test_acc={best.test_acc:.4f}, test_macro_f1={best.test_macro_f1:.4f}")
+    print(f"learning_curve={best.curve_path}")
+    print(f"all_results_csv={results_csv}")
+
+    if args.ensemble_top_k and args.ensemble_top_k > 1:
+        k = min(args.ensemble_top_k, len(order))
+        top = order[:k]
+        avg_logits = torch.stack([logits_by_run[j] for j in top], dim=0).mean(dim=0)
+        labels_cpu = graph.labels.cpu()
+        test_idx_cpu = split.test_idx.cpu()
+        ens_acc = accuracy(avg_logits[test_idx_cpu], labels_cpu[test_idx_cpu])
+        ens_f1 = macro_f1_from_logits(avg_logits[test_idx_cpu], labels_cpu[test_idx_cpu], len(graph.label_names))
+        print("\nOptional ensemble of top validation runs")
+        print("-" * 60)
+        print(f"top_k={k}, ensemble_test_acc={ens_acc:.4f}, ensemble_test_macro_f1={ens_f1:.4f}")
+        print("Note: Use the single-run result for a stricter assignment report unless your instructor allows ensembles.")
+
+
+if __name__ == "__main__":
+    main()
