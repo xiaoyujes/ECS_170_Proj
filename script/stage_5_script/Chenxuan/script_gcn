@@ -1,0 +1,153 @@
+import os
+import sys
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from local_code.stage_5_code.Dataset_Loader_Node_Classification import Dataset_Loader
+from local_code.stage_5_code.Method_GCN import Method_GCN
+from local_code.stage_5_code.Method_GCN_Cora import Method_GCN_Cora
+from local_code.stage_5_code.Method_GCN_Citeseer import Method_GCN_Citeseer
+from local_code.stage_5_code.Method_GCN_Pubmed import Method_GCN_Pubmed
+from local_code.stage_5_code.Result_Saver import Result_Saver
+from local_code.stage_5_code.Setting_Train_Test_Split import Setting_Train_Test_Split
+from local_code.stage_5_code.Evaluate_Accuracy import Evaluate_Accuracy
+
+import numpy as np
+import torch
+import matplotlib.pyplot as plt
+
+
+def run_experiment(dataset_name, config=None):
+    config = config or {}
+    seed = config.get('seed', 2)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    config_name = config.get('name', 'baseline_h16_lr0.01_wd5e-4_do0.5')
+    version_name = f'gcn_{dataset_name}_{config_name}'
+
+    data_obj = Dataset_Loader('stage_5_dataset', '')
+    data_obj.dataset_name = dataset_name
+    data_obj.dataset_source_folder_path = os.path.join(PROJECT_ROOT, 'data', 'stage_5_data', dataset_name)
+    data_obj.split_mode = config.get('split_mode', 'fixed')
+    data_obj.train_per_class = config.get('train_per_class', 20)
+    data_obj.test_per_class = config.get('test_per_class')
+    data_obj.val_size = config.get('val_size', 500)
+    data_obj.split_seed = config.get('split_seed', config.get('seed', 2))
+
+    method_class = config.get('method_class', Method_GCN)
+    method_obj = method_class('graph convolutional network', '')
+    method_overrides = [
+        'max_epoch',
+        'learning_rate',
+        'weight_decay',
+        'hidden_dim',
+        'hidden_dims',
+        'dropout',
+        'use_best_validation_model',
+        'best_selection_metric',
+        'print_interval',
+        'early_stopping_patience',
+        'use_validation',
+    ]
+    for key in method_overrides:
+        if key in config:
+            setattr(method_obj, key, config[key])
+
+    result_obj = Result_Saver('saver', '')
+    result_obj.result_destination_folder_path = os.path.join(PROJECT_ROOT, 'result', 'stage_5_result')
+    result_obj.result_destination_file_name = version_name + '_prediction_result'
+
+    setting_obj = Setting_Train_Test_Split('given node split', '')
+    evaluate_obj = Evaluate_Accuracy('accuracy', '')
+
+    print('************ Start ************')
+    setting_obj.prepare(data_obj, method_obj, result_obj, evaluate_obj)
+    setting_obj.print_setup_summary()
+
+    metrics, learned_result = setting_obj.load_run_save_evaluate()
+
+    print('************ Overall Performance ************')
+    print('Dataset:', dataset_name)
+    print('Config:', config_name)
+    print('GCN Accuracy:', metrics['accuracy'])
+    print('F1-Score weighted:', metrics['f1_weighted'])
+    print('Recall weighted:', metrics['recall_weighted'])
+    print('Precision weighted:', metrics['precision_weighted'])
+    print('F1-Score macro:', metrics['f1_macro'])
+    print('Recall macro:', metrics['recall_macro'])
+    print('Precision macro:', metrics['precision_macro'])
+    print('F1-Score micro:', metrics['f1_micro'])
+    print('Recall micro:', metrics['recall_micro'])
+    print('Precision micro:', metrics['precision_micro'])
+    print('************ Finish ************')
+
+    history = learned_result['history']
+    epochs = [row['epoch'] for row in history]
+    train_losses = [row['loss_train'] for row in history]
+    val_losses = [row['loss_val'] for row in history]
+    train_acc = [row['accuracy_train'] for row in history]
+    val_acc = [row['accuracy_val'] for row in history]
+
+    plt.figure()
+    plt.plot(epochs, train_losses, label='Training Loss')
+    plt.plot(epochs, val_losses, label='Validation Loss')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.title(f'GCN Loss Curve ({dataset_name})')
+    plt.legend()
+    plt.savefig(os.path.join(result_obj.result_destination_folder_path, version_name + '_loss_curve.png'))
+
+    plt.figure()
+    plt.plot(epochs, train_acc, label='Training Accuracy')
+    plt.plot(epochs, val_acc, label='Validation Accuracy')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.title(f'GCN Accuracy Curve ({dataset_name})')
+    plt.legend()
+    plt.savefig(os.path.join(result_obj.result_destination_folder_path, version_name + '_accuracy_curve.png'))
+
+    return metrics
+
+
+BEST_EXPERIMENTS = [
+    (
+        'cora',
+        {
+            'name': 'bestval_wide_h128_lr0.008_wd5e-4_do0.5_ep350_seed9',
+            'method_class': Method_GCN_Cora,
+            'seed': 9,
+        },
+    ),
+    (
+        'citeseer',
+        {
+            'name': 'wide_h64_lr0.005_wd5e-4_do0.45_ep500_seed6',
+            'method_class': Method_GCN_Citeseer,
+            'seed': 6,
+        },
+    ),
+    (
+        'pubmed',
+        {
+            'name': 'randbal_split2_hidden_sweep_h48_lr0.01_wd5e-4_do0.35_ep300_final',
+            'method_class': Method_GCN_Pubmed,
+            'split_mode': 'random_balanced',
+            'split_seed': 2,
+            'seed': 2,
+        },
+    ),
+]
+
+
+if __name__ == '__main__':
+    all_metrics = {}
+    for dataset_name, config in BEST_EXPERIMENTS:
+        key = f"{dataset_name}_{config['name']}"
+        all_metrics[key] = run_experiment(dataset_name, config)
+
+    print('************ Stage 5 Summary ************')
+    for experiment_name, metrics in all_metrics.items():
+        print(experiment_name, 'accuracy:', metrics['accuracy'], 'weighted F1:', metrics['f1_weighted'])
