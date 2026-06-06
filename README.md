@@ -95,3 +95,50 @@ For both tasks, our group built and trained RNN, GRU, and LSTM models. We tested
 | LSTM | 8 | 88.76% | 0.8876 | 0.8876 | 0.8876 |
 
 ## Stage 5: GNN
+
+For stage 5 of the project, our group used the following source as our source code:
+- [GCN with Pytorch](https://github.com/tkipf/pygcn)
+
+Our goal for this stage was to build GCN models to classify nodes in a graph. We were provided 3 datasets:
+1. **CORA**: 
+    - Node file: 
+        - 2,708 lines total --> each line denotes one node
+        - Each line has 1,435 elements organized as: node_id; 1,433 node_features; node_class_label
+        - 7 classes: Case_Based, Genetic_Algorithms, Neural_Networks, Probabilistic_Methods, Reinforcement_Learning, Rule_Learning, Theory
+    - Link file: 
+        - 5,429 lines --> each line denotes one directed link
+    - Training-Testing Set Partition: 
+        - Training: random sample 140 nodes (20 node instances per class) 
+        - Testing: random sample 1,050 nodes (150 node instances per class)
+2. **CiteSeer**:
+    - Node file: 
+        - 3,312 lines
+        - Each line has 3,705 elements organized as: node_id; 3,703 node_features; node_label
+        - 6 classes: (AI, Agents, DB, HCI, IR, ML)
+    - Link file: 
+        - 4,715 lines --> each line denotes one directed link
+    - Training-Testing Set Partition: 
+        - Training: random sample 120 nodes (20 node instances per class)
+        - Testing: random sample 1,200 nodes (200 node instances per class)
+3. **PubMed**:
+    - Node file: 
+        - 19,717 lines total
+        - Each line has 502 elements organized as: node_id; 500 node_features; node_label
+        - 3 classes: 0, 1, 2
+    - Link file: 
+        - 44,324 lines --> each line denotes one directed link
+    - Training-Testing Set Partition: 
+        - Training: random sample 60 nodes (20 node instances per class)
+        - Testing: random sample 600 nodes (200 node instances per class)
+
+For each of the datasets, different model architectures were tested: 
+- **CORA Written by Jeslyn**: this model achieved a final testing accuracy of 84.2%
+- **PubMed Written by Chenxuan**: this model achieved a final testing accuracy of 81.5%
+- **CiteSeer Written by Chenxuan**: this model achieved a final testing accuracy of 71.7%
+
+Overall Final Model Performances:
+| Dataset | Testing Accuracy | Weighted F1 | Weighted Precision | Weighted Recall | 
+| :---: | :---: | :---: | :---: | :---: |
+| CORA | 84.2% | 0.8421 | 0.8449 | 0.8419 |
+| CiteSeer | 71.7% | 0.6741 | 0.7106 | 0.7170 |
+| PubMed | 81.5% | 0.8144 | 0.8288 | 0.8150 |
